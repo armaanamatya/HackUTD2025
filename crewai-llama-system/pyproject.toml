@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "crewai-llama-system"
+version = "0.1.0"
+description = "CrewAI Multi-Agent System with Llama 3.1 8B Instruct"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "crewai",
+    "crewai[tools]",
+    "python-dotenv",
+    "pydantic",
+    "requests",
+    "langchain-community",
+    "ollama",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+    "isort",
+    "flake8",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+
+[tool.isort]
+profile = "black"
+line_length = 88
