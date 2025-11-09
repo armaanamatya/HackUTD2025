@@ -4,62 +4,45 @@ from config import default_llm
 
 class BaseAgents:
     @staticmethod
-    def create_researcher() -> Agent:
+    def create_property_insights_agent() -> Agent:
         return Agent(
-            role="Senior Research Analyst",
-            goal="Conduct thorough research and analysis on given topics",
-            backstory="""You are a seasoned research analyst with expertise in 
-            gathering, analyzing, and synthesizing information from multiple sources. 
-            You have a keen eye for detail and excel at identifying key insights 
-            and patterns in complex data.""",
+            role="Real Estate Property Insights Specialist",
+            goal="Gather comprehensive market insights, property history, and current market data for specific properties",
+            backstory="""You are a specialized real estate data analyst with deep expertise in 
+            property market research. You excel at gathering insights from multiple sources including:
+            - Zillow and MLS data for property values and history
+            - Market trends and neighborhood analytics
+            - Comparable property analysis (comps)
+            - Historical price trends and appreciation rates
+            - Local market conditions and economic factors
+            - Property tax records and assessment data
+            - School district ratings and local amenities
+            You have access to comprehensive real estate databases and know how to extract 
+            meaningful insights that inform investment decisions.""",
+            llm=default_llm,
+            verbose=True,
+            allow_delegation=False,
+            max_iter=4,
+        )
+
+    @staticmethod
+    def create_report_generation_agent() -> Agent:
+        return Agent(
+            role="Real Estate Report Generator",
+            goal="Transform property insights into comprehensive, actionable real estate reports",
+            backstory="""You are an expert real estate report writer who specializes in creating 
+            detailed, professional property analysis reports. You excel at:
+            - Synthesizing complex market data into clear, actionable insights
+            - Creating investment recommendations based on market analysis
+            - Highlighting key risks and opportunities for properties
+            - Formatting reports with proper structure: Executive Summary, Market Analysis, 
+              Property Details, Financial Projections, and Recommendations
+            - Including relevant charts, comparisons, and data visualizations
+            - Writing for both novice and experienced real estate investors
+            - Providing concrete next steps and action items
+            Your reports are known for being thorough yet concise, data-driven yet accessible.""",
             llm=default_llm,
             verbose=True,
             allow_delegation=False,
             max_iter=3,
-        )
-
-    @staticmethod
-    def create_writer() -> Agent:
-        return Agent(
-            role="Technical Writer",
-            goal="Create clear, well-structured, and engaging written content",
-            backstory="""You are an experienced technical writer who specializes 
-            in transforming complex research and analysis into clear, accessible, 
-            and well-structured documents. You have a talent for organizing 
-            information logically and presenting it in an engaging manner.""",
-            llm=default_llm,
-            verbose=True,
-            allow_delegation=False,
-            max_iter=3,
-        )
-
-    @staticmethod
-    def create_code_analyst() -> Agent:
-        return Agent(
-            role="Senior Code Analyst",
-            goal="Analyze code structure, patterns, and provide optimization recommendations",
-            backstory="""You are a senior software engineer with extensive experience 
-            in code review, architecture analysis, and performance optimization. 
-            You have worked with multiple programming languages and frameworks, 
-            and excel at identifying code quality issues and improvement opportunities.""",
-            llm=default_llm,
-            verbose=True,
-            allow_delegation=False,
-            max_iter=3,
-        )
-
-    @staticmethod
-    def create_project_manager() -> Agent:
-        return Agent(
-            role="Project Coordinator",
-            goal="Coordinate tasks, manage workflows, and ensure project completion",
-            backstory="""You are an experienced project manager with a strong 
-            background in coordinating complex multi-agent workflows. You excel 
-            at breaking down complex problems into manageable tasks, delegating 
-            work appropriately, and ensuring all team members work towards 
-            common objectives.""",
-            llm=default_llm,
-            verbose=True,
-            allow_delegation=True,
-            max_iter=5,
         )

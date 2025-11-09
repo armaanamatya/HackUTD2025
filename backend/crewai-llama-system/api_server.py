@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # Add src directory to path
 sys.path.append(str(Path(__file__).parent / "src"))
 
-from src.crews import ResearchCrew, ProjectPlanningCrew
+from src.crews import PropertyInsightsCrew, ReportGenerationCrew
 from config import llm_config
 
 app = FastAPI(
@@ -222,10 +222,10 @@ async def run_research_job(job_id: str, topic: str):
         job_store[job_id]["status"] = "running"
         logger.info(f"Research job status updated to running | Job ID: {job_id}")
         
-        # Run the research crew
-        crew = ResearchCrew()
-        logger.info(f"Running research crew | Job ID: {job_id}")
-        result = crew.run_research(topic)
+        # Run the property insights crew
+        crew = PropertyInsightsCrew()
+        logger.info(f"Running property insights crew | Job ID: {job_id}")
+        result = crew.run_insights_analysis(topic)
         
         duration = time.time() - start_time
         logger.info(f"Research crew completed | Job ID: {job_id} | Duration: {duration:.2f}s | Result length: {len(str(result))} chars")
@@ -249,10 +249,10 @@ async def run_project_planning_job(job_id: str, project_description: str):
         job_store[job_id]["status"] = "running"
         logger.info(f"Project planning job status updated to running | Job ID: {job_id}")
         
-        # Run the project planning crew
-        crew = ProjectPlanningCrew()
-        logger.info(f"Running project planning crew | Job ID: {job_id}")
-        result = crew.run_planning(project_description)
+        # Run the report generation crew
+        crew = ReportGenerationCrew()
+        logger.info(f"Running report generation crew | Job ID: {job_id}")
+        result = crew.run_report_generation(project_description)
         
         duration = time.time() - start_time
         logger.info(f"Project planning crew completed | Job ID: {job_id} | Duration: {duration:.2f}s | Result length: {len(str(result))} chars")
@@ -300,10 +300,10 @@ async def run_research_with_files_job(job_id: str, topic: str, files: List[FileC
         enhanced_topic = f"{topic}\n\n{file_context}Please consider the uploaded documents in your research and analysis."
         logger.info(f"Enhanced topic length: {len(enhanced_topic)} chars | Job ID: {job_id}")
         
-        # Run the research crew with enhanced context
-        crew = ResearchCrew()
-        logger.info(f"Running research crew with file context | Job ID: {job_id}")
-        result = crew.run_research(enhanced_topic)
+        # Run the property insights crew with enhanced context
+        crew = PropertyInsightsCrew()
+        logger.info(f"Running property insights crew with file context | Job ID: {job_id}")
+        result = crew.run_insights_analysis(enhanced_topic)
         
         duration = time.time() - start_time
         logger.info(f"Research with files crew completed | Job ID: {job_id} | Duration: {duration:.2f}s | Result length: {len(str(result))} chars")
@@ -351,10 +351,10 @@ async def run_project_planning_with_files_job(job_id: str, project_description: 
         enhanced_description = f"{project_description}\n\n{file_context}Please consider the uploaded documents in your project planning and analysis."
         logger.info(f"Enhanced description length: {len(enhanced_description)} chars | Job ID: {job_id}")
         
-        # Run the project planning crew with enhanced context
-        crew = ProjectPlanningCrew()
-        logger.info(f"Running project planning crew with file context | Job ID: {job_id}")
-        result = crew.run_planning(enhanced_description)
+        # Run the report generation crew with enhanced context
+        crew = ReportGenerationCrew()
+        logger.info(f"Running report generation crew with file context | Job ID: {job_id}")
+        result = crew.run_report_generation(enhanced_description)
         
         duration = time.time() - start_time
         logger.info(f"Project planning with files crew completed | Job ID: {job_id} | Duration: {duration:.2f}s | Result length: {len(str(result))} chars")
