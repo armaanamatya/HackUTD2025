@@ -53,7 +53,8 @@ export default function PropertyGrid({ properties, filters }: PropertyGridProps)
         ...prev,
         [id]: !prev[id],
       }
-      // If unbookmarking in saved tab, clear selection if it was the selected property
+      // If unbookmarking the currently selected property, clear selection
+      // The useEffect will handle selecting the next available property if in saved tab
       if (!updated[id] && selectedProperty?.id === id) {
         setSelectedProperty(null)
       }
@@ -418,9 +419,7 @@ export default function PropertyGrid({ properties, filters }: PropertyGridProps)
       {/* Right: Property Details + Map - Fixed */}
       <div className="w-[380px] flex-shrink-0 h-full overflow-hidden">
         <PropertyDetailPanel 
-          property={selectedProperty || displayProperties[0]} 
-          allProperties={displayProperties}
-          selectedPropertyId={selectedProperty?.id}
+          property={selectedProperty || displayProperties[0] || null} 
         />
       </div>
     </div>

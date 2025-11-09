@@ -23,17 +23,25 @@ export const useChatStore = create<ChatStore>()(
       isProcessing: false,
       
       addMessage: (role, content) =>
-        set((state) => ({
-          messages: [
-            ...state.messages,
-            {
-              id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-              role,
-              content,
-              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            },
-          ],
-        })),
+        set((state) => {
+          // Prevent duplicate messages by checking if the last message has identical content
+          const lastMessage = state.messages[state.messages.length - 1]
+          if (lastMessage && lastMessage.role === role && lastMessage.content === content) {
+            return state // Don't add duplicate message
+          }
+          
+          return {
+            messages: [
+              ...state.messages,
+              {
+                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                role,
+                content,
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              },
+            ],
+          }
+        }),
       
       clearChat: () => set({ messages: [] }),
       
