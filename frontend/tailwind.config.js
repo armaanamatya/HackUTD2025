@@ -18,10 +18,17 @@ export default {
           surface: '#1e293b',
           border: '#334155',
         },
+        cura: {
+          blue: '#00AEEF',
+        },
       },
       fontFamily: {
         sans: ['Satoshi', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
+        cbre: ['var(--font-cbre)', 'Montserrat', 'system-ui', 'sans-serif'],
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(ellipse at center, var(--tw-gradient-stops))',
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
