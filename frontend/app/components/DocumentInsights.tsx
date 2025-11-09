@@ -103,28 +103,52 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
 
+  // Helpers to ensure safe metric access
+  const isNumber = (val: unknown): val is number => typeof val === 'number' && !Number.isNaN(val)
+  const normalizeDocumentMetrics = (m: any): DocumentMetrics => ({
+    totalClauses: isNumber(m?.totalClauses) ? m.totalClauses : 0,
+    expiringSoon: typeof m?.expiringSoon === 'boolean' ? m.expiringSoon : false,
+    complianceScore: isNumber(m?.complianceScore) ? m.complianceScore : 0,
+    rentAmount: typeof m?.rentAmount === 'string' && m.rentAmount !== '' ? m.rentAmount : 'N/A',
+  })
+  const normalizeDocument = (doc: any): Document => ({
+    fileName: typeof doc?.fileName === 'string' ? doc.fileName : 'Unknown Document',
+    numPages: isNumber(doc?.numPages) ? doc.numPages : 0,
+    metrics: normalizeDocumentMetrics(doc?.metrics),
+    aiSummary: typeof doc?.aiSummary === 'string' ? doc.aiSummary : '',
+  })
+
   // Initialize documents from props
   useEffect(() => {
     if (props.documents && props.documents.length > 0) {
-      setDocuments(props.documents)
+      // Normalize incoming documents to ensure metrics are safely accessible
+      setDocuments(props.documents.map(normalizeDocument))
     } else if (props.fileName && props.metrics) {
       // Single document from direct API response
-      setDocuments([{
-        fileName: props.fileName,
-        numPages: props.numPages || 0,
-        metrics: props.metrics,
-        aiSummary: props.aiSummary || '',
-      }])
+      setDocuments([
+        normalizeDocument({
+          fileName: props.fileName,
+          numPages: props.numPages || 0,
+          metrics: props.metrics,
+          aiSummary: props.aiSummary || '',
+        })
+      ])
     }
   }, [props])
 
   // Calculate aggregate metrics
   const aggregateMetrics = documents.length > 0 ? {
     totalDocuments: documents.length,
-    totalClauses: Math.round(documents.reduce((sum, doc) => sum + doc.metrics.totalClauses, 0) / documents.length),
-    expiringSoon: documents.filter(doc => doc.metrics.expiringSoon).length,
-    averageCompliance: Math.round(documents.reduce((sum, doc) => sum + doc.metrics.complianceScore, 0) / documents.length),
-    totalMonthlyRent: documents.find(doc => doc.metrics.rentAmount !== 'N/A')?.metrics.rentAmount || 'N/A',
+    totalClauses: Math.round(
+      documents.reduce((sum, doc) => sum + (isNumber(doc.metrics?.totalClauses) ? doc.metrics.totalClauses : 0), 0) /
+      documents.length
+    ),
+    expiringSoon: documents.filter(doc => !!doc.metrics && doc.metrics.expiringSoon === true).length,
+    averageCompliance: Math.round(
+      documents.reduce((sum, doc) => sum + (isNumber(doc.metrics?.complianceScore) ? doc.metrics.complianceScore : 0), 0) /
+      documents.length
+    ),
+    totalMonthlyRent: documents.find(doc => doc.metrics?.rentAmount && doc.metrics.rentAmount !== 'N/A')?.metrics.rentAmount || 'N/A',
   } : {
     totalDocuments: 0,
     totalClauses: 0,

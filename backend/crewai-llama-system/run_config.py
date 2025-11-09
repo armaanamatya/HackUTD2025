@@ -17,7 +17,14 @@ def check_config():
     if provider == "gemini":
         api_key = os.getenv("GEMINI_API_KEY")
         print(f"Gemini API Key: {'[SET]' if api_key else '[MISSING]'}")
-        print(f"Model: gemini-1.5-flash")
+        print(f"Model: gemini-flash-latest")
+    elif provider == "openai":
+        base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+        model = os.getenv("OPENAI_MODEL", "gpt-5")
+        api_key = os.getenv("OPENAI_API_KEY")
+        print(f"Base URL: {base_url}")
+        print(f"Model: {model}")
+        print(f"OpenAI API Key: {'[SET]' if api_key else '[MISSING]'}")
     elif provider == "ollama":
         base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
         model = os.getenv("OLLAMA_MODEL", "llama3.1:8b-instruct")

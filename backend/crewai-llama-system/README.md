@@ -50,6 +50,12 @@ LLM_PROVIDER=local
 LOCAL_BASE_URL=http://localhost:8000/v1
 LOCAL_MODEL=mistralai/mistral-nemo-instruct-2407
 OPENAI_API_KEY=sk-no-key-required
+
+# Or for direct OpenAI API (requires valid API key)
+LLM_PROVIDER=openai
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL=gpt-5
+OPENAI_API_KEY=<your_openai_api_key>
 ```
 
 ### 3. Setup Local LLM
@@ -71,6 +77,11 @@ vllm serve meta-llama/Llama-3.1-8B-Instruct --host 0.0.0.0 --port 8000
 - Point `LOCAL_BASE_URL` to your server (e.g., `http://localhost:8000/v1`).
 - Set `LOCAL_MODEL` to the model name your server exposes.
 - Use a dummy `OPENAI_API_KEY` (`sk-no-key-required`) if your client requires one. If the local endpoint is unreachable or unusable, the system falls back to Gemini `gemini-flash-latest` automatically (requires `GEMINI_API_KEY`).
+
+#### Option D: OpenAI (Direct)
+- Set `LLM_PROVIDER=openai` with `OPENAI_API_KEY` and `OPENAI_MODEL` (e.g., `gpt-5`).
+- Default `OPENAI_BASE_URL` is `https://api.openai.com/v1`.
+- Ensure you keep your API key in `.env` and never commit it.
 
 ## Usage
 

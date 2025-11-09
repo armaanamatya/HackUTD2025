@@ -1,13 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // External packages configuration for webpack
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      // Mark server-side packages that shouldn't be bundled
-      config.externals.push('pdf-parse')
-    }
-    return config
+  // Turbopack configuration (Next 16 default bundler)
+  turbopack: {
+    // Silence workspace root inference warning by explicitly setting the root
+    root: __dirname,
   },
 }
 

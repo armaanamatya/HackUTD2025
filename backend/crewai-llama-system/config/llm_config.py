@@ -19,6 +19,8 @@ class LLMConfig:
             return self._get_vllm_llm()
         elif self.provider == "gemini":
             return self._get_gemini_llm()
+        elif self.provider == "openai":
+            return self._get_openai_llm()
         elif self.provider == "local":
             # Automatic fallback: if local endpoint is unreachable, use Gemini
             if not self._local_endpoint_available():
@@ -74,6 +76,23 @@ class LLMConfig:
             api_key=api_key,
         )
 
+    def _get_openai_llm(self) -> LLM:
+        """Configure direct OpenAI API usage (e.g., gpt-5)."""
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise ValueError("OPENAI_API_KEY not found in environment variables")
+
+        base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+        # Default to GPT-5 if no explicit model is provided
+        model = os.getenv("OPENAI_MODEL", "gpt-5")
+
+        return LLM(
+            model=f"openai/{model}",
+            base_url=base_url,
+            api_key=api_key,
+            temperature=0.7,
+        )
+
     def _local_endpoint_available(self) -> bool:
         """Check if the local OpenAI-compatible endpoint is reachable and usable.
         We first GET /models, then attempt a minimal POST to /chat/completions.
@@ -125,6 +144,14 @@ class LLMConfig:
                 "debug": self.debug,
                 "model": "gemini-flash-latest",
                 "api_key_set": bool(os.getenv("GEMINI_API_KEY")),
+            }
+        elif self.provider == "openai":
+            return {
+                "provider": self.provider,
+                "debug": self.debug,
+                "model": os.getenv("OPENAI_MODEL"),
+                "base_url": os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+                "api_key_set": bool(os.getenv("OPENAI_API_KEY")),
             }
         elif self.provider == "local":
             return {
