@@ -1,8 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useState, useRef, KeyboardEvent, useEffect } from 'react'
-import { Send, Lock, ChevronDown, Paperclip, X, FileText } from 'lucide-react'
+import { useState, useRef, KeyboardEvent } from 'react'
+import { Send, Paperclip, X, FileText } from 'lucide-react'
 
 // Logging utility
 const log = {
@@ -35,30 +35,11 @@ export default function ChatInputBar({
 }: ChatInputBarProps) {
   const [inputValue, setInputValue] = useState(initialValue)
   const [isFocused, setIsFocused] = useState(false)
-  const [showModelDropdown, setShowModelDropdown] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [dragActive, setDragActive] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowModelDropdown(false)
-      }
-    }
-
-    if (showModelDropdown) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [showModelDropdown])
 
   const handleSend = () => {
     if (!inputValue.trim() && uploadedFiles.length === 0) return
@@ -301,56 +282,13 @@ export default function ChatInputBar({
         </motion.div>
       </motion.div>
 
-      {/* Bottom Row: Model Selection & Hints */}
+      {/* Bottom Row: Hints */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.6, duration: 0.6 }}
-        className="flex flex-col md:flex-row items-start md:items-center justify-between mt-4 px-2 gap-3 md:gap-0"
+        className="flex flex-col md:flex-row items-start md:items-center justify-end mt-4 px-2 gap-3 md:gap-0"
       >
-        {/* Left: Model Selection */}
-        <div className="flex flex-wrap items-center gap-2 md:gap-3">
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setShowModelDropdown(!showModelDropdown)}
-              className="flex items-center gap-2 text-[#B7C4B8] hover:text-white hover:border-[#00A86B]/40 text-xs md:text-sm font-medium transition-all duration-300 px-3 py-1.5 rounded border border-[#1E3028] hover:bg-[#00A86B]/5"
-              style={{ fontWeight: 500 }}
-            >
-              <span>CURA 3.5 Smart</span>
-              <Lock size={12} className="text-[#B7C4B8]/60" />
-              <ChevronDown size={14} className={`text-[#B7C4B8]/60 transition-transform ${showModelDropdown ? 'rotate-180' : ''}`} />
-            </button>
-            
-            {/* Dropdown (simplified - can be enhanced) */}
-            {showModelDropdown && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                className="absolute bottom-full mb-2 left-0 bg-[#111513]/95 backdrop-blur-md border border-[#1E3028] rounded-lg p-2 min-w-[200px] shadow-xl z-50"
-              >
-                <button 
-                  onClick={() => setShowModelDropdown(false)}
-                  className="w-full text-left px-3 py-2 text-sm text-white/80 hover:bg-[#00A86B]/10 hover:text-white rounded transition-colors"
-                >
-                  CURA 3.5 Smart
-                </button>
-                <button 
-                  onClick={() => setShowModelDropdown(false)}
-                  className="w-full text-left px-3 py-2 text-sm text-[#B7C4B8] hover:bg-[#00A86B]/10 hover:text-white rounded transition-colors"
-                >
-                  CURA 4.0 Pro
-                </button>
-              </motion.div>
-            )}
-          </div>
-          
-          <div className="flex items-center gap-1 px-2 py-1 rounded bg-[#111513]/60 border border-[#1E3028]">
-            <span className="text-xs text-[#B7C4B8]">Formal</span>
-            <ChevronDown size={12} className="text-[#B7C4B8]/60" />
-          </div>
-        </div>
-
         {/* Right: Hints */}
         <div className="flex items-center gap-4 text-xs text-[#B7C4B8]">
           <span className="hidden sm:inline">Use shift + return for new line</span>
