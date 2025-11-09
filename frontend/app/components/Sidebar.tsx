@@ -10,11 +10,11 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'insights', label: 'Insights', icon: Lightbulb },
-  { id: 'reports', label: 'Reports', icon: FileText },
-  { id: 'predictions', label: 'Predictions', icon: TrendingUp },
-  { id: 'settings', label: 'Settings', icon: Settings },
+  { id: WorkspaceType.PROPERTY_DISCOVERY, label: 'Property Discovery', icon: LayoutDashboard },
+  { id: WorkspaceType.INSIGHT_SUMMARIZER, label: 'Insights', icon: Lightbulb },
+  { id: WorkspaceType.DOCUMENT_INTELLIGENCE, label: 'Documents', icon: FileText },
+  { id: WorkspaceType.PREDICTIVE_ANALYTICS, label: 'Predictions', icon: TrendingUp },
+  { id: WorkspaceType.SMART_SEARCH, label: 'Search', icon: Settings },
 ]
 
 export default function Sidebar({ activeView, setActiveView }: SidebarProps) {

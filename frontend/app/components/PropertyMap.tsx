@@ -127,9 +127,6 @@ export default function PropertyMap({ property, properties = [], selectedPropert
   useEffect(() => {
     setIsMounted(true)
     if (typeof window !== 'undefined') {
-      // Import Leaflet CSS
-      import('leaflet/dist/leaflet.css')
-      
       // Fix Leaflet default icon issue
       import('leaflet').then((L) => {
         delete (L.default.Icon.Default.prototype as any)._getIconUrl

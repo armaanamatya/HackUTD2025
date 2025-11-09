@@ -19,11 +19,11 @@ interface WorkspaceTabsProps {
 }
 
 const iconMap: Record<WorkspaceType, any> = {
-  dashboard: LayoutDashboard,
-  insights: Lightbulb,
-  reports: FileText,
-  predictions: TrendingUp,
-  settings: LayoutDashboard,
+  [WorkspaceType.PROPERTY_DISCOVERY]: LayoutDashboard,
+  [WorkspaceType.INSIGHT_SUMMARIZER]: Lightbulb,
+  [WorkspaceType.DOCUMENT_INTELLIGENCE]: FileText,
+  [WorkspaceType.PREDICTIVE_ANALYTICS]: TrendingUp,
+  [WorkspaceType.SMART_SEARCH]: LayoutDashboard,
 }
 
 export default function WorkspaceTabs({ tabs, activeTab, onTabClick, onTabClose }: WorkspaceTabsProps) {
