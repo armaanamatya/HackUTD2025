@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bookmark, BookmarkCheck, MapPin, Star, Bed, Bath, Square } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
+import PropertyImage from './PropertyImage'
 import PropertyDetailPanel from './PropertyDetailPanel'
 
 interface Property {
@@ -22,6 +23,7 @@ interface Property {
   rooms?: number | null
   kitchens?: number | null
   garage?: number | null
+  zillow_url?: string | null
 }
 
 interface PropertyGridProps {
@@ -327,10 +329,12 @@ export default function PropertyGrid({ properties, filters }: PropertyGridProps)
             >
               {/* Image */}
               <div className="relative w-full h-[160px] overflow-hidden rounded-t-2xl">
-                <img
+                <PropertyImage
                   src={property.image}
                   alt={property.title}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
                 {/* Badge */}
                 <div className="absolute top-3 left-3 bg-[#111513]/95 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm border border-[#1E3028]">

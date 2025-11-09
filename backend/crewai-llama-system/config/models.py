@@ -218,6 +218,7 @@ class MarketListing(Document):
     features: List[str] = []
     photos: List[str] = []
     virtual_tour_url: Optional[str] = None
+    zillow_url: Optional[str] = None
     
     class Settings:
         name = "market_listings"

@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { Home, Bed, Bath, Square, Car, UtensilsCrossed, X, Mail, Phone, MessageSquare, Star, User } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import PropertyImage from './PropertyImage'
 
 interface Property {
   id: string
@@ -23,6 +24,7 @@ interface Property {
   garage?: number | null
   lat?: number
   lng?: number
+  zillow_url?: string | null
 }
 
 interface PropertyDetailPanelProps {
@@ -161,11 +163,15 @@ function OrderModal({ property, isOpen, onClose }: { property: Property; isOpen:
 
           <div className="space-y-4">
             <div className="p-4 bg-[#0B0E0C]/60 rounded-lg border border-[#1E3028]">
-              <img
-                src={property.image}
-                alt={property.title}
-                className="w-full h-32 object-cover rounded-lg mb-3"
-              />
+              <div className="relative w-full h-32 rounded-lg overflow-hidden mb-3">
+                <PropertyImage
+                  src={property.image}
+                  alt={property.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 400px"
+                />
+              </div>
               <h4 className="text-lg font-semibold text-white font-cbre mb-1">{property.title}</h4>
               <p className="text-xs text-[#B7C4B8] mb-2">{property.address}</p>
               <div className="flex items-center justify-between">
@@ -469,25 +475,31 @@ export default function PropertyDetailPanel({ property }: PropertyDetailPanelPro
           <div className="grid grid-cols-[2fr_1fr] gap-1.5 p-2.5">
             {/* Main large image */}
             <div className="relative h-[140px] rounded-lg overflow-hidden col-span-1 row-span-2">
-              <img 
+              <PropertyImage 
                 src={(property.images && property.images[0]) || property.image} 
                 alt={property.title} 
-                className="w-full h-full object-cover" 
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 40vw"
               />
             </div>
             {/* Two smaller images stacked */}
             <div className="relative h-[68px] rounded-lg overflow-hidden">
-              <img 
+              <PropertyImage 
                 src={(property.images && property.images[1]) || property.image} 
                 alt={`${property.title} 2`} 
-                className="w-full h-full object-cover" 
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 50vw, 20vw"
               />
             </div>
             <div className="relative h-[68px] rounded-lg overflow-hidden">
-              <img 
+              <PropertyImage 
                 src={(property.images && property.images[2]) || property.image} 
                 alt={`${property.title} 3`} 
-                className="w-full h-full object-cover" 
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 50vw, 20vw"
               />
             </div>
           </div>
@@ -541,14 +553,27 @@ export default function PropertyDetailPanel({ property }: PropertyDetailPanelPro
 
             {/* Action Buttons - Functional */}
             <div className="flex gap-2 mt-4">
-              <motion.button
-                onClick={() => setShowContactModal(true)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                className="flex-1 px-3 py-2 rounded-lg border-2 border-[#00A86B] text-[#00A86B] font-semibold text-xs hover:bg-[#00A86B]/10 transition-all"
-              >
-                Contact Agent
-              </motion.button>
+              {property.zillow_url && property.zillow_url.trim() ? (
+                <motion.a
+                  href={property.zillow_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 px-3 py-2 rounded-lg border-2 border-[#00A86B] text-[#00A86B] font-semibold text-xs hover:bg-[#00A86B]/10 transition-all text-center"
+                >
+                  View on Zillow
+                </motion.a>
+              ) : (
+                <motion.button
+                  onClick={() => setShowContactModal(true)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 px-3 py-2 rounded-lg border-2 border-[#00A86B] text-[#00A86B] font-semibold text-xs hover:bg-[#00A86B]/10 transition-all"
+                >
+                  Contact Agent
+                </motion.button>
+              )}
               <motion.button
                 onClick={() => setShowOrderModal(true)}
                 whileHover={{ scale: 1.05 }}
