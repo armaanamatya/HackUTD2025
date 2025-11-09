@@ -5,27 +5,21 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Mic, Bot, User, ChevronLeft, ChevronRight } from 'lucide-react'
 import { CURA_SYSTEM_PROMPT } from '../lib/constants'
 import { WorkspaceType } from '../lib/constants'
-
-interface Message {
-  id: number
-  type: 'user' | 'assistant'
-  text: string
-  timestamp: Date
-}
+import { AssistantMessage } from '../types'
 
 interface AssistantPanelProps {
-  messages: Message[]
-  setMessages: (messages: Message[]) => void
+  messages: AssistantMessage[]
+  setMessages: (messages: AssistantMessage[]) => void
   currentWorkspace: WorkspaceType
   onInlineQuestion?: (question: string) => void
 }
 
 const CONTEXTUAL_PROMPTS: Record<WorkspaceType, string> = {
-  dashboard: 'The user is viewing the dashboard. Focus on metrics, trends, and quick insights.',
-  insights: 'The user is in the Insights section. Provide detailed analysis and findings.',
-  reports: 'The user is generating reports. Help with data compilation and formatting.',
-  predictions: 'The user is viewing predictions. Discuss forecasts, trends, and future scenarios.',
-  settings: 'The user is in settings. Help with configuration and preferences.',
+  [WorkspaceType.PROPERTY_DISCOVERY]: 'The user is discovering properties. Help with property search, analysis, and recommendations.',
+  [WorkspaceType.PREDICTIVE_ANALYTICS]: 'The user is viewing predictive analytics. Discuss forecasts, trends, and future scenarios.',
+  [WorkspaceType.DOCUMENT_INTELLIGENCE]: 'The user is analyzing documents. Help with document insights, extraction, and analysis.',
+  [WorkspaceType.INSIGHT_SUMMARIZER]: 'The user is in the Insights section. Provide detailed analysis and findings.',
+  [WorkspaceType.SMART_SEARCH]: 'The user is performing smart search. Help with search queries and result interpretation.',
 }
 
 export default function AssistantPanel({ 
@@ -52,7 +46,7 @@ export default function AssistantPanel({
         setIsTyping(true)
         const responseText = generateContextualResponse(lastMessage.text)
         setTimeout(() => {
-          const aiResponse: Message = {
+          const aiResponse: AssistantMessage = {
             id: messages.length + 1,
             type: 'assistant',
             text: responseText,
@@ -71,14 +65,14 @@ export default function AssistantPanel({
     const lowerInput = userInput.toLowerCase()
 
     if (lowerInput.includes('explain') || lowerInput.includes('what') || lowerInput.includes('why')) {
-      if (currentWorkspace === 'dashboard') {
-        return `Based on the dashboard metrics, here's what's happening: Your portfolio shows strong growth with a 12.5% increase in total value. Occupancy is at 94.2%, which is excellent. Expenses decreased by 3.2%, indicating efficient operations. The market trends chart shows consistent upward momentum, particularly in the last quarter.`
+      if (currentWorkspace === WorkspaceType.PROPERTY_DISCOVERY) {
+        return `Based on the property discovery data, here's what's happening: Your search results show strong properties with good growth potential. I can help you analyze market trends, property values, and investment opportunities.`
       }
-      if (currentWorkspace === 'predictions') {
+      if (currentWorkspace === WorkspaceType.PREDICTIVE_ANALYTICS) {
         return `Looking at predictive models, I forecast continued growth in the next quarter. Based on current trends, expect occupancy to remain above 93%, with potential value increases of 8-12%. However, monitor energy costs as they may rise 4-6% due to seasonal factors.`
       }
-      if (currentWorkspace === 'insights') {
-        return `Key insights from your portfolio: Plano HQ shows exceptional growth at 12% with low risk. Dallas Tower has moderate growth but medium risk - worth monitoring. Austin Complex is your strongest performer at 15% growth. Consider reallocating resources to high-growth, low-risk properties.`
+      if (currentWorkspace === WorkspaceType.INSIGHT_SUMMARIZER) {
+        return `Key insights from your portfolio: Properties show strong performance indicators. I can help you analyze market data, financial metrics, and risk assessments to optimize your real estate investments.`
       }
     }
 
@@ -97,32 +91,30 @@ export default function AssistantPanel({
     const messageText = text || inputValue
     if (!messageText.trim()) return
 
+    let newMessages = [...messages]
+    
     if (!skipUserMessage) {
-      const newUserMessage: Message = {
-        id: messages.length + 1,
+      const newUserMessage: AssistantMessage = {
+        id: newMessages.length + 1,
         type: 'user',
         text: messageText,
         timestamp: new Date(),
       }
-      setMessages([...messages, newUserMessage])
+      newMessages = [...newMessages, newUserMessage]
+      setMessages(newMessages)
     }
 
     setInputValue('')
     setIsTyping(true)
 
     setTimeout(() => {
-      const aiResponse: Message = {
-        id: messages.length + 2,
+      const aiResponse: AssistantMessage = {
+        id: newMessages.length + 1,
         type: 'assistant',
         text: generateContextualResponse(messageText),
         timestamp: new Date(),
       }
-      setMessages([...messages, skipUserMessage ? messages : [...messages, {
-        id: messages.length + 1,
-        type: 'user',
-        text: messageText,
-        timestamp: new Date(),
-      }], aiResponse])
+      setMessages([...newMessages, aiResponse])
       setIsTyping(false)
     }, 1000 + Math.random() * 500)
   }

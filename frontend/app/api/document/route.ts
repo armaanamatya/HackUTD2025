@@ -46,7 +46,7 @@ async function extractTextFromPDF(buffer: Buffer): Promise<PDFParseResult> {
     if (!data) throw new Error("No data returned from pdf-parse.");
 
     const text = data.text || "";
-    const numPages = data.numpages || data.numPages || 0;
+    const numPages = data.numpages || 0;
 
     console.log("✅ PDF parsed successfully:", { numPages, textLength: text.length });
     return { text, numPages };
