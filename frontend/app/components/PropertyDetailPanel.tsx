@@ -26,9 +26,11 @@ interface Property {
 
 interface PropertyDetailPanelProps {
   property: Property
+  allProperties?: Property[]
+  selectedPropertyId?: string
 }
 
-export default function PropertyDetailPanel({ property }: PropertyDetailPanelProps) {
+export default function PropertyDetailPanel({ property, allProperties, selectedPropertyId }: PropertyDetailPanelProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'about'>('overview')
 
   const tabs = [
@@ -50,7 +52,7 @@ export default function PropertyDetailPanel({ property }: PropertyDetailPanelPro
     <motion.div
       initial={{ x: 20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="w-[380px] flex-shrink-0 flex flex-col gap-3 p-3 overflow-y-auto"
+      className="h-full flex flex-col gap-3 p-3 overflow-y-auto custom-scrollbar"
     >
       {/* Property Details Card - Compacted */}
       <div className="bg-[#111513]/60 backdrop-blur-xl rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[#1E3028] overflow-visible">
@@ -165,7 +167,11 @@ export default function PropertyDetailPanel({ property }: PropertyDetailPanelPro
       </div>
 
       {/* Map - Compacted */}
-      <PropertyMap property={property} />
+      <PropertyMap 
+        property={property} 
+        properties={allProperties || [property]}
+        selectedPropertyId={selectedPropertyId || property.id}
+      />
     </motion.div>
   )
 }
