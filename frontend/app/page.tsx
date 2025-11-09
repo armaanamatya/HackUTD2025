@@ -126,17 +126,13 @@ export default function Home() {
   }
 
   const handleChatMessage = async (message: string) => {
-    // Check if this should go to CrewAI or existing agent system
-    const crewaiKeywords = ['research', 'analyze', 'plan', 'project', 'study', 'investigate', 'examine']
-    const shouldUseCrewAI = crewaiKeywords.some(keyword => 
-      message.toLowerCase().includes(keyword)
-    )
+    // Route ALL requests to CrewAI
+    log.info('Processing chat message - routing to CrewAI', {
+      messageLength: message.length
+    })
     
-    if (shouldUseCrewAI) {
-      await handleCrewAIQuery(message)
-    } else {
-      await handleSearch(message)
-    }
+    // Always route to CrewAI
+    await handleCrewAIQuery(message)
   }
 
   const handleDocumentUpload = async (file: File) => {
@@ -344,25 +340,15 @@ function HomeView({
 
   const handleInputSubmit = async (message: string, files?: any[]) => {
     if (message.trim() || (files && files.length > 0)) {
-      // Check if this should go to CrewAI or existing agent system
-      const crewaiKeywords = ['research', 'analyze', 'plan', 'project', 'study', 'investigate', 'examine']
-      const shouldUseCrewAI = crewaiKeywords.some(keyword => 
-        message.toLowerCase().includes(keyword)
-      ) || (files && files.length > 0) // Always use CrewAI if files are present
-      
-      log.info('Home input submitted', {
+      // Route ALL requests to CrewAI
+      log.info('Home input submitted - routing to CrewAI', {
         messageLength: message.length,
         hasFiles: !!(files && files.length > 0),
-        fileCount: files?.length || 0,
-        shouldUseCrewAI,
-        matchedKeywords: crewaiKeywords.filter(keyword => message.toLowerCase().includes(keyword))
+        fileCount: files?.length || 0
       })
       
-      if (shouldUseCrewAI) {
-        await onCrewAIQuery(message, files)
-      } else {
-        onQuickAction(message)
-      }
+      // Always route to CrewAI
+      await onCrewAIQuery(message, files)
     }
   }
 
