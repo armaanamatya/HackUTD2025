@@ -46,16 +46,6 @@ VLLM_BASE_URL=http://localhost:8000/v1
 VLLM_MODEL=meta-llama/Llama-3.1-8B-Instruct
 ```
 
-Or for Google Generative AI (Gemini):
-```bash
-# Gemini (Google Generative AI)
-LLM_PROVIDER=gemini
-GEMINI_API_KEY=your_google_genai_api_key
-# Choose a Gemini model
-GEMINI_MODEL=gemini-2.0-flash-exp
-# Examples: gemini-2.5-flash-latest, gemini-1.5-pro, gemini-1.5-flash-8b
-```
-
 ### 3. Setup Local LLM
 
 #### Option A: Ollama (Recommended for Development)

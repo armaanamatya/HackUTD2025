@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import os
 import sys
 from pathlib import Path
 
@@ -65,20 +64,9 @@ def main():
         print("\nProcess interrupted by user.")
     except Exception as e:
         print(f"\nError: {str(e)}")
-        print("\nTroubleshooting:")
-        if llm_config.provider == "ollama":
-            print("- Ollama: ensure 'ollama serve' is running and model is pulled")
-            print("  Model:", os.getenv("OLLAMA_MODEL", "llama3.1:8b-instruct"))
-            print("  Base URL:", os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"))
-        elif llm_config.provider == "vllm":
-            print("- vLLM: ensure server is reachable at:")
-            print("  Base URL:", os.getenv("VLLM_BASE_URL", "http://localhost:8000/v1"))
-            print("  Model:", os.getenv("VLLM_MODEL", "meta-llama/Llama-3.1-8B-Instruct"))
-        elif llm_config.provider == "gemini":
-            print("- Gemini: ensure 'GEMINI_API_KEY' is set and valid")
-            print("  Model:", os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp"))
-            print("  Tip: install 'crewai[google-genai]' and 'google-generativeai'")
-        print("\nProvider Source:", llm_config.get_config_info().get("provider_source", "unknown"))
+        print("\nMake sure your local LLM server is running:")
+        print("- For Ollama: 'ollama serve' and 'ollama pull llama3.1:8b-instruct'")
+        print("- For vLLM: 'vllm serve meta-llama/Llama-3.1-8B-Instruct'")
 
 
 if __name__ == "__main__":

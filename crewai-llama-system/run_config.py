@@ -6,10 +6,10 @@ import os
 sys.path.append(os.path.dirname(__file__))
 
 from dotenv import load_dotenv
-load_dotenv(override=True)
+load_dotenv()
 
 def check_config():
-    provider = os.getenv("LLM_PROVIDER", "gemini")
+    provider = os.getenv("LLM_PROVIDER", "ollama")
     
     print("=== CrewAI Configuration Check ===")
     print(f"LLM Provider: {provider}")
@@ -17,7 +17,7 @@ def check_config():
     if provider == "gemini":
         api_key = os.getenv("GEMINI_API_KEY")
         print(f"Gemini API Key: {'[SET]' if api_key else '[MISSING]'}")
-        print(f"Model: {os.getenv('GEMINI_MODEL', 'gemini-2.0-flash-exp')}")
+        print(f"Model: gemini-1.5-flash")
     elif provider == "ollama":
         base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
         model = os.getenv("OLLAMA_MODEL", "llama3.1:8b-instruct")

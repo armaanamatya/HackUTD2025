@@ -1,13 +1,13 @@
 import os
 from crewai import LLM
-from dotenv import load_dotenv, find_dotenv, dotenv_values
+from dotenv import load_dotenv
 
-load_dotenv(override=True)
+load_dotenv()
 
 
 class LLMConfig:
     def __init__(self):
-        self.provider = os.getenv("LLM_PROVIDER", "gemini")
+        self.provider = os.getenv("LLM_PROVIDER", "ollama")
         self.debug = os.getenv("DEBUG", "false").lower() == "true"
         
     def get_llm(self) -> LLM:
@@ -45,31 +45,20 @@ class LLMConfig:
         
         if not api_key:
             raise ValueError("GEMINI_API_KEY not found in environment variables")
-        model = os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp")
-
+        
         return LLM(
-            model=f"google/{model}",
+            model="gemini-2.0-flash-exp",
             api_key=api_key,
             temperature=0.7,
         )
     
     def get_config_info(self) -> dict:
-        def _env_source(var_name: str) -> str:
-            dotenv_path = find_dotenv(usecwd=True)
-            file_vals = dotenv_values(dotenv_path) if dotenv_path else {}
-            file_val = file_vals.get(var_name)
-            env_val = os.getenv(var_name)
-            if file_val is None:
-                return "os_environment"
-            return "env_file" if env_val == file_val else "os_environment"
-
         if self.provider == "gemini":
             return {
                 "provider": self.provider,
                 "debug": self.debug,
-                "model": os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp"),
+                "model": "gemini-2.0-flash-exp",
                 "api_key_set": bool(os.getenv("GEMINI_API_KEY")),
-                "provider_source": _env_source("LLM_PROVIDER"),
             }
         else:
             return {
@@ -77,7 +66,6 @@ class LLMConfig:
                 "debug": self.debug,
                 "model": os.getenv(f"{self.provider.upper()}_MODEL"),
                 "base_url": os.getenv(f"{self.provider.upper()}_BASE_URL"),
-                "provider_source": _env_source("LLM_PROVIDER"),
             }
 
 
