@@ -15,7 +15,7 @@ const greetings = [
   "Get comprehensive property insights and analysis.",
 ]
 
-export default function HomeGreeting({ userName = 'Jordan' }: HomeGreetingProps) {
+export default function HomeGreeting({ userName = 'Rishi' }: HomeGreetingProps) {
   const [currentGreeting, setCurrentGreeting] = useState(0)
   
   // Get time of day for personalized greeting

@@ -341,7 +341,7 @@ export default function Home() {
             </motion.button>
           )}
           <div className="w-9 h-9 rounded-full bg-[#111513]/60 border border-[#1E3028] flex items-center justify-center text-white text-sm font-semibold backdrop-blur-sm">
-            JD
+            RG
           </div>
         </div>
       </motion.header>
@@ -436,10 +436,10 @@ function HomeView({
   }
 
   return (
-    <div className="h-full w-full flex items-center justify-center overflow-y-auto relative pt-16">
+    <div className="h-full w-full flex items-center justify-center overflow-hidden relative pt-16">
       <div className="w-full max-w-5xl px-4 md:px-6 py-12 md:py-20 flex flex-col items-center justify-center">
         {/* Greeting Section */}
-        <HomeGreeting userName="Jordan" />
+        <HomeGreeting userName="Rishi" />
 
         {/* Prompt Buttons */}
         <PromptButtons onPromptSelect={handlePromptSelect} />
