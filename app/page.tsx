@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, Search, Sparkles } from 'lucide-react'
+import { Zap, Sparkles, Search } from 'lucide-react'
+import ChatPanel from './components/ChatPanel'
 import PropertyDiscovery from './components/PropertyDiscovery'
-import AnalyticsView from './components/AnalyticsView'
+import PredictiveAnalytics from './components/PredictiveAnalytics'
 import ChatResponse from './components/ChatResponse'
 import DocumentInsights from './components/DocumentInsights'
 import InsightSummaryDashboard from './components/InsightSummaryDashboard'
@@ -57,19 +58,18 @@ export default function Home() {
     handleSearch(action)
   }
 
+  const handleChatMessage = async (message: string) => {
+    // Handle messages from the chat panel
+    await handleSearch(message)
+  }
+
   const renderContent = () => {
     switch (viewMode) {
       case 'property':
+        // PropertyDiscovery already has its own layout with ChatPanel, so we need to extract just the PropertyGrid
         return <PropertyDiscovery data={responseData?.data} />
       case 'analytics':
-        return (
-          <AnalyticsView 
-            metrics={responseData?.data?.metrics || []} 
-            chartData={responseData?.data?.chartData || []}
-            chartType={responseData?.data?.chartType}
-            insights={responseData?.data?.insights}
-          />
-        )
+        return <PredictiveAnalytics data={responseData?.data || {}} />
       case 'document':
         return (
           <DocumentInsights 
@@ -87,6 +87,7 @@ export default function Home() {
           />
         )
       case 'chat':
+        // For chat view, just show the response content (ChatPanel is always on left)
         return <ChatResponse content={responseData?.content || ''} />
       default:
         return <HomeView onQuickAction={handleQuickAction} />
@@ -125,24 +126,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Search Bar - Only show if not on home */}
-        {viewMode !== 'home' && (
-          <div className="flex-1 max-w-2xl mx-8">
-            <div className="relative">
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Ask CURA anything..."
-                className="w-full px-4 py-2.5 pl-11 rounded-xl bg-gray-50 border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-sm"
-                disabled={isProcessing}
-              />
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-            </div>
-          </div>
-        )}
-
         {/* Actions */}
         <div className="flex items-center gap-3">
           {viewMode !== 'home' && (
@@ -161,20 +144,28 @@ export default function Home() {
         </div>
       </motion.header>
 
-      {/* Main Content Area */}
-      <div className="flex-1 overflow-hidden relative">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={viewMode}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.3 }}
-            className="h-full w-full"
-          >
-            {renderContent()}
-          </motion.div>
-        </AnimatePresence>
+      {/* Main Content Area with Persistent Chat Panel */}
+      <div className="flex-1 overflow-hidden relative flex">
+        {/* Left: Persistent Chat Panel - Show on all pages except home */}
+        {viewMode !== 'home' && (
+          <ChatPanel onSendMessage={handleChatMessage} isProcessing={isProcessing} />
+        )}
+
+        {/* Right: Main Content */}
+        <div className="flex-1 overflow-hidden relative">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={viewMode}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+              className="h-full w-full"
+            >
+              {renderContent()}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   )
@@ -213,7 +204,7 @@ function HomeView({ onQuickAction }: { onQuickAction: (action: string) => void }
   ]
 
   return (
-    <div className="h-full flex items-center justify-center p-12">
+    <div className="h-full w-full flex items-center justify-center p-12 overflow-y-auto">
       <div className="max-w-6xl w-full">
         {/* Hero Section */}
         <motion.div
@@ -268,7 +259,7 @@ function HomeView({ onQuickAction }: { onQuickAction: (action: string) => void }
           ))}
         </div>
 
-        {/* Search Bar */}
+        {/* Search Textbox */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
