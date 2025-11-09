@@ -330,7 +330,6 @@ async def start_project_planning_with_files(request: ProjectPlanningWithFilesReq
     
     return JobResponse(**job_store[job_id])
 
-<<<<<<< Updated upstream
 # Helper function to clean NaN values from dictionaries
 def clean_nan_values(obj: Any) -> Any:
     """Recursively convert NaN values to None for JSON serialization"""
@@ -502,7 +501,6 @@ async def get_listing_stats():
     except Exception as e:
         logger.error(f"Error getting listing stats: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-=======
 @app.post("/respond-with-files", response_model=JobResponse)
 async def start_response_with_files(request: RespondWithFilesRequest, background_tasks: BackgroundTasks):
     job_id = str(uuid.uuid4())
@@ -521,7 +519,6 @@ async def start_response_with_files(request: RespondWithFilesRequest, background
     background_tasks.add_task(run_response_with_files_job, job_id, request.user_query, request.files)
     
     return JobResponse(**job_store[job_id])
->>>>>>> Stashed changes
 
 async def run_research_job(job_id: str, topic: str):
     start_time = time.time()
