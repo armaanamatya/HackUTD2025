@@ -285,6 +285,13 @@ export default function Home() {
             topInsights={responseData?.data?.topInsights || []}
             recommendations={responseData?.data?.recommendations || []}
             chartData={responseData?.data?.chartData}
+            pros={responseData?.data?.pros}
+            cons={responseData?.data?.cons}
+            title={responseData?.title}
+            subtitle={responseData?.content}
+            property={responseData?.data?.property}
+            property1={responseData?.data?.property1}
+            property2={responseData?.data?.property2}
           />
         )
       case 'chat':
