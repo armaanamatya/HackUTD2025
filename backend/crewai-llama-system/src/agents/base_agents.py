@@ -46,3 +46,37 @@ class BaseAgents:
             allow_delegation=False,
             max_iter=3,
         )
+
+    @staticmethod
+    def create_insight_router_agent() -> Agent:
+        return Agent(
+            role="Insight Agent (Router)",
+            goal="Classify user intent and prepare structured context with relevant tool calls",
+            backstory="""You act as an intelligent router that:
+            - Classifies incoming queries into one of: analytics, document, or chat
+            - Plans and triggers web research/tool calls (Perplexity, Tavily, page fetch)
+            - Structures findings into a clean JSON payload for a downstream generator
+            - Extracts parameters such as location, price ranges, time windows, and filters
+            - Summarizes sources and ensures data is organized for easy consumption
+            Your output is strictly JSON as a data contract to the generator.""",
+            llm=default_llm,
+            verbose=True,
+            allow_delegation=False,
+            max_iter=4,
+        )
+
+    @staticmethod
+    def create_unified_response_agent() -> Agent:
+        return Agent(
+            role="Unified Response Generator",
+            goal="Generate polished, structured user-facing responses from router JSON for analytics, document, or chat",
+            backstory="""You transform a router-produced JSON payload into a final response:
+            - For analytics: produce insights, metrics, and chart-ready structures
+            - For document: compile listings/extractions with filters and sources
+            - For chat: respond concisely with helpful information
+            Outputs are structured JSON designed for frontend consumption, including sections/blocks and sources.""",
+            llm=default_llm,
+            verbose=True,
+            allow_delegation=False,
+            max_iter=3,
+        )

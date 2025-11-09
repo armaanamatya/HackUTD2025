@@ -6,6 +6,9 @@ from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, Any, Optional, List
+import re
+import json
+from datetime import datetime, timezone
 import asyncio
 from datetime import datetime
 import uuid
@@ -23,7 +26,7 @@ logger = logging.getLogger(__name__)
 # Add src directory to path
 sys.path.append(str(Path(__file__).parent / "src"))
 
-from src.crews import PropertyInsightsCrew, ReportGenerationCrew
+from src.crews import PropertyInsightsCrew, ReportGenerationCrew, ResponseRoutingCrew
 from config import llm_config
 from config.database import connect_to_mongo, close_mongo_connection
 from config.models import AnalysisJob, PropertyInsight, RealEstateReport, FileUpload, MarketListing, JobStatus, JobType
@@ -79,11 +82,63 @@ async def shutdown_event():
 # In-memory storage for job tracking
 job_store: Dict[str, Dict[str, Any]] = {}
 
+
+def _normalize_json_result(raw: str) -> str:
+    """Attempt to return a clean JSON string from agent output.
+    - If raw is valid JSON, return compact dumps.
+    - Else, try to extract a ```json fenced block.
+    - Else, try to find the first JSON object via braces.
+    - Fallback to original string if parsing fails.
+    """
+    def _ensure_timestamp(obj: Dict[str, Any]) -> Dict[str, Any]:
+        # Ensure generated_at is a current ISO-8601 UTC timestamp
+        now_iso = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+        if not isinstance(obj, dict):
+            return obj
+        if "generated_at" not in obj or not isinstance(obj["generated_at"], str):
+            obj["generated_at"] = now_iso
+        return obj
+
+    try:
+        parsed = json.loads(raw)
+        parsed = _ensure_timestamp(parsed)
+        return json.dumps(parsed, separators=(",", ":"))
+    except Exception:
+        pass
+
+    # Look for fenced code block ```json ... ```
+    m = re.search(r"```json\s*([\s\S]*?)\s*```", raw)
+    if m:
+        block = m.group(1).strip()
+        try:
+            parsed = json.loads(block)
+            parsed = _ensure_timestamp(parsed)
+            return json.dumps(parsed, separators=(",", ":"))
+        except Exception:
+            pass
+
+    # Heuristic: find first { ... } matching block
+    brace_start = raw.find("{")
+    brace_end = raw.rfind("}")
+    if brace_start != -1 and brace_end != -1 and brace_end > brace_start:
+        candidate = raw[brace_start:brace_end + 1]
+        try:
+            parsed = json.loads(candidate)
+            parsed = _ensure_timestamp(parsed)
+            return json.dumps(parsed, separators=(",", ":"))
+        except Exception:
+            pass
+
+    return raw
+
 class ResearchRequest(BaseModel):
     topic: str
 
 class ProjectPlanningRequest(BaseModel):
     project_description: str
+
+class RespondRequest(BaseModel):
+    user_query: str
 
 class FileContext(BaseModel):
     fileName: str
@@ -99,6 +154,10 @@ class ResearchWithFilesRequest(BaseModel):
 
 class ProjectPlanningWithFilesRequest(BaseModel):
     project_description: str
+    files: List[FileContext]
+
+class RespondWithFilesRequest(BaseModel):
+    user_query: str
     files: List[FileContext]
 
 class JobResponse(BaseModel):
@@ -118,6 +177,8 @@ async def root():
             "/project-planning": "POST - Run project planning crew", 
             "/research-with-files": "POST - Run research crew with file context",
             "/project-planning-with-files": "POST - Run project planning crew with file context",
+            "/respond": "POST - Classify and generate multi-agent response",
+            "/respond-with-files": "POST - Classify and generate response with file context",
             "/jobs/{job_id}": "GET - Get job status and results",
             "/jobs": "GET - List all jobs",
             "/listings": "GET - Get market listings",
@@ -182,6 +243,24 @@ async def start_project_planning(request: ProjectPlanningRequest, background_tas
         result=job.result_text,
         error=job.error_message
     )
+
+@app.post("/respond", response_model=JobResponse)
+async def start_response(request: RespondRequest, background_tasks: BackgroundTasks):
+    job_id = str(uuid.uuid4())
+    
+    job_store[job_id] = {
+        "job_id": job_id,
+        "status": "pending",
+        "created_at": datetime.now().isoformat(),
+        "type": "respond",
+        "input": request.user_query,
+        "result": None,
+        "error": None
+    }
+    
+    background_tasks.add_task(run_response_job, job_id, request.user_query)
+    
+    return JobResponse(**job_store[job_id])
 
 @app.get("/jobs/{job_id}", response_model=JobResponse)
 async def get_job_status(job_id: str):
@@ -251,6 +330,7 @@ async def start_project_planning_with_files(request: ProjectPlanningWithFilesReq
     
     return JobResponse(**job_store[job_id])
 
+<<<<<<< Updated upstream
 # Helper function to clean NaN values from dictionaries
 def clean_nan_values(obj: Any) -> Any:
     """Recursively convert NaN values to None for JSON serialization"""
@@ -422,6 +502,26 @@ async def get_listing_stats():
     except Exception as e:
         logger.error(f"Error getting listing stats: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+=======
+@app.post("/respond-with-files", response_model=JobResponse)
+async def start_response_with_files(request: RespondWithFilesRequest, background_tasks: BackgroundTasks):
+    job_id = str(uuid.uuid4())
+    
+    job_store[job_id] = {
+        "job_id": job_id,
+        "status": "pending",
+        "created_at": datetime.now().isoformat(),
+        "type": "respond-with-files",
+        "input": request.user_query,
+        "files": [file.dict() for file in request.files],
+        "result": None,
+        "error": None
+    }
+    
+    background_tasks.add_task(run_response_with_files_job, job_id, request.user_query, request.files)
+    
+    return JobResponse(**job_store[job_id])
+>>>>>>> Stashed changes
 
 async def run_research_job(job_id: str, topic: str):
     start_time = time.time()
@@ -488,6 +588,70 @@ async def run_project_planning_job(job_id: str, project_description: str):
     except Exception as e:
         duration = time.time() - start_time
         logger.error(f"Project planning job failed | Job ID: {job_id} | Duration: {duration:.2f}s | Error: {str(e)}")
+        job_store[job_id]["status"] = "failed"
+        job_store[job_id]["error"] = str(e)
+
+async def run_response_job(job_id: str, user_query: str):
+    start_time = time.time()
+    logger.info(f"Starting response job | Job ID: {job_id}")
+    
+    try:
+        job_store[job_id]["status"] = "running"
+        logger.info(f"Response job status updated to running | Job ID: {job_id}")
+        
+        crew = ResponseRoutingCrew()
+        logger.info(f"Running response routing crew | Job ID: {job_id}")
+        result = crew.run_response_workflow(user_query)
+        
+        duration = time.time() - start_time
+        logger.info(f"Response routing completed | Job ID: {job_id} | Duration: {duration:.2f}s | Result length: {len(str(result))} chars")
+        
+        job_store[job_id]["status"] = "completed"
+        job_store[job_id]["result"] = _normalize_json_result(str(result))
+    except Exception as e:
+        duration = time.time() - start_time
+        logger.error(f"Response job failed | Job ID: {job_id} | Duration: {duration:.2f}s | Error: {str(e)}")
+        job_store[job_id]["status"] = "failed"
+        job_store[job_id]["error"] = str(e)
+
+async def run_response_with_files_job(job_id: str, user_query: str, files: List[FileContext]):
+    start_time = time.time()
+    logger.info(f"Starting response with files job | Job ID: {job_id} | File count: {len(files)}")
+    
+    try:
+        job_store[job_id]["status"] = "running"
+        logger.info(f"Response with files job status updated to running | Job ID: {job_id}")
+
+        file_context = "\n\n=== DOCUMENT CONTEXT ===\n"
+        total_content_length = 0
+        for i, file in enumerate(files):
+            logger.info(f"Processing file {i+1}/{len(files)}: {file.fileName} | Job ID: {job_id}")
+            file_context += f"\n--- File: {file.fileName} ---\n"
+            file_context += f"Content: {file.content}\n"
+            total_content_length += len(file.content)
+            if file.extractedText:
+                file_context += f"Extracted Text: {file.extractedText}\n"
+                total_content_length += len(file.extractedText)
+            if file.metrics:
+                file_context += f"Metrics: {file.metrics}\n"
+        file_context += "\n=== END DOCUMENT CONTEXT ===\n\n"
+        logger.info(f"File context prepared | Job ID: {job_id} | Total content length: {total_content_length} chars")
+        
+        enhanced_query = f"{user_query}\n\n{file_context}Please consider the uploaded documents in classification and generation."
+        logger.info(f"Enhanced query length: {len(enhanced_query)} chars | Job ID: {job_id}")
+        
+        crew = ResponseRoutingCrew()
+        logger.info(f"Running response routing crew with file context | Job ID: {job_id}")
+        result = crew.run_response_workflow(enhanced_query)
+        
+        duration = time.time() - start_time
+        logger.info(f"Response with files completed | Job ID: {job_id} | Duration: {duration:.2f}s | Result length: {len(str(result))} chars")
+        
+        job_store[job_id]["status"] = "completed"
+        job_store[job_id]["result"] = _normalize_json_result(str(result))
+    except Exception as e:
+        duration = time.time() - start_time
+        logger.error(f"Response with files job failed | Job ID: {job_id} | Duration: {duration:.2f}s | Error: {str(e)}")
         job_store[job_id]["status"] = "failed"
         job_store[job_id]["error"] = str(e)
 
