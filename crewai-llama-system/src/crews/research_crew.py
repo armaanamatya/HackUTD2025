@@ -13,7 +13,7 @@ class ResearchCrew:
         writer = self.agents.create_writer()
         
         # Assign tools to agents
-        researcher.tools = self.tools.get_file_tools()
+        researcher.tools = self.tools.get_web_tools() + self.tools.get_file_tools()
         writer.tools = self.tools.get_file_tools()
         
         # Define tasks
