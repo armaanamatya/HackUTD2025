@@ -170,10 +170,12 @@ export async function POST(request: NextRequest) {
           if (listing.air_conditioning) tags.push('AC')
           if (tags.length === 0) tags.push(listing.property_type || 'Property')
           
-          // Default image (you might want to use listing.photos if available)
-          const image = listing.photos && listing.photos.length > 0
-            ? listing.photos[0]
-            : 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&h=400&fit=crop'
+          // Priority: picture field > photos array > default
+          const image = listing.picture 
+            ? listing.picture
+            : (listing.photos && listing.photos.length > 0
+              ? listing.photos[0]
+              : 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&h=400&fit=crop')
           
           return {
             id,
@@ -187,11 +189,12 @@ export async function POST(request: NextRequest) {
             baths: listing.bathrooms ?? null,
             sqft,
             tags,
-            images: listing.photos || [image],
+            images: listing.photos && listing.photos.length > 0 ? listing.photos : [image],
             description: listing.description || `${listing.property_type || 'Property'} in ${listing.city || 'the area'}`,
             rooms: listing.bedrooms ?? null, // Use bedrooms as rooms for now
             kitchens: null, // Not available in MongoDB schema
             garage: listing.garage_spaces ?? null,
+            zillow_url: listing.zillow_url || null,
           }
         })
         
