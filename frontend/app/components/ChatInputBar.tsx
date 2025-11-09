@@ -26,12 +26,14 @@ interface ChatInputBarProps {
   onSendMessage?: (message: string, files?: UploadedFile[]) => void
   placeholder?: string
   initialValue?: string
+  isLoading?: boolean
 }
 
 export default function ChatInputBar({ 
   onSendMessage, 
   placeholder = 'How can CURA help you today?',
-  initialValue = ''
+  initialValue = '',
+  isLoading = false
 }: ChatInputBarProps) {
   const [inputValue, setInputValue] = useState(initialValue)
   const [isFocused, setIsFocused] = useState(false)
@@ -43,6 +45,7 @@ export default function ChatInputBar({
 
   const handleSend = () => {
     if (!inputValue.trim() && uploadedFiles.length === 0) return
+    if (isLoading) return
 
     log.info('Sending message', {
       messageLength: inputValue.length,
@@ -247,6 +250,7 @@ export default function ChatInputBar({
                 ? '0 4px 20px rgba(0,168,107,0.2)' 
                 : '0 4px 20px rgba(0, 0, 0, 0.3)',
             }}
+            disabled={isLoading}
           />
           
           {/* Right side icons */}
@@ -255,7 +259,7 @@ export default function ChatInputBar({
               onClick={() => fileInputRef.current?.click()}
               className="p-2 text-white/40 hover:text-white/60 transition-colors"
               title="Attach file"
-              disabled={isUploading}
+              disabled={isUploading || isLoading}
             >
               <Paperclip size={18} />
             </button>
@@ -272,8 +276,9 @@ export default function ChatInputBar({
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 onClick={handleSend}
-                className="p-2 text-[#00A86B] hover:text-[#88C999] transition-colors"
+                className="p-2 text-[#00A86B] hover:text-[#88C999] transition-colors disabled:opacity-50"
                 title="Send message"
+                disabled={isLoading}
               >
                 <Send size={18} />
               </motion.button>
@@ -281,6 +286,18 @@ export default function ChatInputBar({
           </div>
         </motion.div>
       </motion.div>
+
+      {/* Loading bar when waiting for agent feedback */}
+      {isLoading && (
+        <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-[#1E3028]">
+          <motion.div
+            className="h-full bg-gradient-to-r from-transparent via-[#00A86B] to-transparent"
+            initial={{ x: '-100%' }}
+            animate={{ x: '100%' }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
+          />
+        </div>
+      )}
 
       {/* Bottom Row: Hints */}
       <motion.div

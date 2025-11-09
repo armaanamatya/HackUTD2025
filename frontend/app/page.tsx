@@ -423,15 +423,14 @@ function HomeView({
 
   const handleInputSubmit = async (message: string, files?: any[]) => {
     if (message.trim() || (files && files.length > 0)) {
-      // Route queries through handleSearch which will determine response type and route accordingly
-      log.info('Home input submitted - routing through handleSearch', {
+      // Send typed input to agents pipeline and show loading
+      log.info('Home input submitted - routing to agents', {
         messageLength: message.length,
         hasFiles: !!(files && files.length > 0),
         fileCount: files?.length || 0
       })
-      
-      // Route through handleSearch for proper type detection and routing
-      await onSearch(message, true)
+
+      await onCrewAIQuery(message, files)
     }
   }
 
@@ -448,6 +447,7 @@ function HomeView({
         <div className="w-full mt-8">
           <ChatInputBar 
             onSendMessage={handleInputSubmit}
+            isLoading={isProcessing}
             placeholder="How can CURA help you today?"
           />
         </div>

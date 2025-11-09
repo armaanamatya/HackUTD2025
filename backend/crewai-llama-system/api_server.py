@@ -69,6 +69,8 @@ async def startup_event():
     try:
         await connect_to_mongo()
         logger.info("✓ Database connection established")
+        # Log the active LLM configuration to make provider choice explicit
+        logger.info(f"Active LLM configuration: {llm_config.get_config_info()}")
     except Exception as e:
         logger.error(f"✗ Failed to connect to database: {e}")
         raise

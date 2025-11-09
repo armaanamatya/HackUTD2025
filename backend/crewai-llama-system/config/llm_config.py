@@ -11,6 +11,8 @@ class LLMConfig:
     def __init__(self):
         self.provider = os.getenv("LLM_PROVIDER", "ollama")
         self.debug = os.getenv("DEBUG", "false").lower() == "true"
+        # Explicit control to allow or disable Gemini fallback when using local provider
+        self.allow_gemini_fallback = os.getenv("ALLOW_GEMINI_FALLBACK", "false").lower() == "true"
         
     def get_llm(self) -> LLM:
         if self.provider == "ollama":
@@ -20,8 +22,8 @@ class LLMConfig:
         elif self.provider == "gemini":
             return self._get_gemini_llm()
         elif self.provider == "local":
-            # Automatic fallback: if local endpoint is unreachable, use Gemini
-            if not self._local_endpoint_available():
+            # Strict local usage by default. Only fallback to Gemini if explicitly allowed.
+            if self.allow_gemini_fallback and not self._local_endpoint_available():
                 gem_llm = self._maybe_get_gemini_fallback()
                 if gem_llm is not None:
                     return gem_llm
@@ -132,7 +134,8 @@ class LLMConfig:
                 "debug": self.debug,
                 "model": os.getenv("LOCAL_MODEL"),
                 "base_url": os.getenv("LOCAL_BASE_URL"),
-                "fallback_to_gemini": self._local_endpoint_available() is False and bool(os.getenv("GEMINI_API_KEY")),
+                "allow_gemini_fallback": self.allow_gemini_fallback,
+                "fallback_to_gemini": self.allow_gemini_fallback and (self._local_endpoint_available() is False) and bool(os.getenv("GEMINI_API_KEY")),
             }
         else:
             return {
