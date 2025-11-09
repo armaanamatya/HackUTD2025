@@ -20,7 +20,7 @@ export default function AgentChat() {
     {
       id: '1',
       type: 'assistant',
-      content: 'Hello! I\'m CURA, your AI real estate analyst. I can help you analyze properties, predict trends, visualize data, and summarize documents. What would you like to know?',
+      content: 'Hello! I\'m CURA, your AI real estate analyst. I can help you discover properties, predict market trends, analyze property insights, and compare portfolios. What would you like to explore?',
       timestamp: new Date(),
     },
   ])

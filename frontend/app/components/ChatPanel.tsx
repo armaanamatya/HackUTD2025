@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Mic, Paperclip, X, ChevronLeft } from 'lucide-react'
+import { Send, Paperclip, X, ChevronLeft } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { useChatStore } from '../stores/chatStore'
 
@@ -178,14 +178,6 @@ export default function ChatPanel({ onSendMessage, isProcessing, isExpanded = fa
               <Paperclip size={18} />
             </button>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {}}
-            className="p-3 rounded-xl bg-[#111513]/60 border border-[#1E3028] text-[#B7C4B8] hover:text-white hover:border-[#00A86B]/40 transition-all"
-          >
-            <Mic size={18} />
-          </motion.button>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
