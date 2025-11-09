@@ -12,15 +12,15 @@ interface Property {
   rating: number
   image: string
   type: string
-  beds: number
-  baths: number
+  beds: number | null
+  baths: number | null
   sqft: string
   tags: string[]
   images?: string[]
   description?: string
-  rooms?: number
-  kitchens?: number
-  garage?: number
+  rooms?: number | null
+  kitchens?: number | null
+  garage?: number | null
   lat?: number
   lng?: number
 }
@@ -241,14 +241,19 @@ export default function PropertyDetailPanel({ property }: PropertyDetailPanelPro
     { id: 'about' as const, label: 'About' },
   ]
 
-  // Define specs with safe property access - use empty values as fallback
+  // Define specs with safe property access - show 'N/A' for null/undefined values
+  const formatValue = (value: any): string | number => {
+    if (value === null || value === undefined) return 'N/A'
+    return value
+  }
+  
   const specs = property ? [
-    { icon: Home, label: 'Rooms', value: property.rooms || 6 },
-    { icon: Bed, label: 'Beds', value: property.beds },
-    { icon: Bath, label: 'Baths', value: property.baths },
-    { icon: UtensilsCrossed, label: 'Kitchens', value: property.kitchens || 2 },
-    { icon: Square, label: 'Area', value: property.sqft },
-    { icon: Car, label: 'Garage', value: property.garage || 1 },
+    { icon: Home, label: 'Rooms', value: formatValue(property.rooms) },
+    { icon: Bed, label: 'Beds', value: formatValue(property.beds) },
+    { icon: Bath, label: 'Baths', value: formatValue(property.baths) },
+    { icon: UtensilsCrossed, label: 'Kitchens', value: formatValue(property.kitchens) },
+    { icon: Square, label: 'Area', value: property.sqft || 'N/A' },
+    { icon: Car, label: 'Garage', value: formatValue(property.garage) },
   ] : []
 
   // Mock reviews data - constant, doesn't depend on property
