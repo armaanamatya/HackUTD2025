@@ -83,3 +83,19 @@ crewai-llama-system/src/crews/__pycache__/
 crewai-llama-system/src/tools/__pycache__/
 crewai-llama-system/src/agents/__pycache__/
 crewai-llama-system/config/__pycache__/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+lerna-debug.log*
+
+# Next.js
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
