@@ -45,8 +45,8 @@ class GeminiOCRService:
         
         logger.info("Initializing Gemini OCR service")
         genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel("gemini-1.5-flash")
-        logger.info("Gemini OCR service initialized successfully")
+        self.model = genai.GenerativeModel("gemini-2.5-flash")
+        logger.info("Gemini OCR service initialized successfully with gemini-2.5-flash")
     
     def process_document(
         self,

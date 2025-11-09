@@ -217,6 +217,7 @@ class MarketListing(Document):
     description: Optional[str] = None
     features: List[str] = []
     photos: List[str] = []
+    picture: Optional[str] = None  # Main property picture URL
     virtual_tour_url: Optional[str] = None
     
     class Settings:

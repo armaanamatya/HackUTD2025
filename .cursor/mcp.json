@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "MongoDB": {
+      "command": "npx",
+      "args": ["-y", "mongodb-mcp-server@latest", "--readOnly"],
+      "env": {
+        "MDB_MCP_CONNECTION_STRING": "mongodb+srv://armaanamatya2014_db_user:4czlTmpWmiMKeGEL@cluster0.rxrhayj.mongodb.net/hackutd_real_estate?appName=Cluster0"
+      }
+    }
+  }
+}
+
