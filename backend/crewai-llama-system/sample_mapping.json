@@ -1,0 +1,19 @@
+{
+  "address": "Street Address",
+  "city": "City",
+  "state": "State",
+  "zip_code": "ZIP Code",
+  "mls_number": "MLS#",
+  "bedrooms": "Beds",
+  "bathrooms": "Baths", 
+  "square_footage": "Sq Ft",
+  "lot_size": "Lot Size",
+  "year_built": "Year Built",
+  "listing_price": "List Price",
+  "price_per_sqft": "Price/Sq Ft",
+  "latitude": "Latitude",
+  "longitude": "Longitude",
+  "property_type": "Property Type",
+  "status": "Status",
+  "list_date": "List Date"
+}
