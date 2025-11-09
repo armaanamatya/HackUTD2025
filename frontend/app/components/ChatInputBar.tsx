@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useState, useRef, KeyboardEvent, useEffect } from 'react'
-import { Send, Lock, ChevronDown, Camera, Paperclip, X, FileText } from 'lucide-react'
+import { Send, Lock, ChevronDown, Paperclip, X, FileText } from 'lucide-react'
 
 // Logging utility
 const log = {
@@ -286,12 +286,6 @@ export default function ChatInputBar({
               onChange={handleFileSelect}
               className="hidden"
             />
-            <button
-              className="p-2 text-[#B7C4B8]/60 hover:text-[#00A86B] transition-colors"
-              title="Camera"
-            >
-              <Camera size={18} />
-            </button>
             {(inputValue.trim() || uploadedFiles.length > 0) && (
               <motion.button
                 initial={{ scale: 0, opacity: 0 }}

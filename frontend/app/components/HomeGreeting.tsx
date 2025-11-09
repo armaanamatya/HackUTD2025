@@ -10,7 +10,9 @@ interface HomeGreetingProps {
 const greetings = [
   "Ready to uncover new market opportunities?",
   "Let's find your next property insight.",
-  "Need help analyzing today's documents?",
+  "Discover high-value properties in your area.",
+  "Predict upcoming market trends and opportunities.",
+  "Get comprehensive property insights and analysis.",
 ]
 
 export default function HomeGreeting({ userName = 'Jordan' }: HomeGreetingProps) {

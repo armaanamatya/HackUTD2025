@@ -77,12 +77,12 @@ export default function AgentCanvas({ cards, onCardRemove }: AgentCanvasProps) {
               <span className="text-4xl">✨</span>
             </motion.div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">CURA Agent Canvas</h3>
-            <p className="text-sm text-gray-600 mb-4">Ask me to search properties, analyze trends, or extract document insights</p>
+            <p className="text-sm text-gray-600 mb-4">Ask me to search properties, analyze trends, or get market insights</p>
             <p className="text-xs text-gray-500 mb-6">I'll adapt my interface to match your needs</p>
             <div className="flex flex-wrap gap-3 justify-center max-w-3xl">
               <DemoButton query="show me properties" onClick={() => window.dispatchEvent(new CustomEvent('cura-query', { detail: 'show me properties' }))} />
               <DemoButton query="predict next quarter" onClick={() => window.dispatchEvent(new CustomEvent('cura-query', { detail: 'predict next quarter' }))} />
-              <DemoButton query="extract contract info" onClick={() => window.dispatchEvent(new CustomEvent('cura-query', { detail: 'extract contract info' }))} />
+              <DemoButton query="compare portfolios" onClick={() => window.dispatchEvent(new CustomEvent('cura-query', { detail: 'compare portfolios by ROI' }))} />
               <DemoButton query="summarize insights" onClick={() => window.dispatchEvent(new CustomEvent('cura-query', { detail: 'summarize insights' }))} />
             </div>
           </motion.div>

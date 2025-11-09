@@ -56,6 +56,7 @@ export default function Home() {
   useEffect(() => {
     if (viewMode === 'home') {
       // Reset all processing-related state when returning to home
+      setIsExpanded(false) // Ensure chat is collapsed on home
       setIsProcessing(false)
       setStoreProcessing(false)
       setCrewaiResponse('')
@@ -131,21 +132,14 @@ export default function Home() {
     }
   }
 
-  const handleQuickAction = (action: string, category?: 'insights' | 'trends' | 'contracts' | 'documents') => {
+  const handleQuickAction = (action: string, category?: 'insights' | 'trends' | 'property' | 'analytics') => {
     // Clear any previous query
     setQuery('')
     
     // Map categories to view modes and trigger appropriate action
     if (category) {
-      // For document and contract queries, use CrewAI and show chat view
-      // This allows users to upload documents and get AI analysis
-      if (category === 'contracts' || category === 'documents') {
-        handleCrewAIQuery(action)
-        return
-      }
-      
-      // For insights and trends, use the search API which will route to the correct view
-      // The API will determine the view mode based on the query content
+      // All categories now route through handleSearch which will determine the correct view
+      // Document mode will only trigger if the query explicitly mentions documents/PDFs/upload
       handleSearch(action, true)
       return
     }
@@ -334,10 +328,12 @@ export default function Home() {
               whileTap={{ scale: 0.95 }}
               onClick={() => {
                 setViewMode('home')
+                setIsExpanded(false) // Reset chat expansion state
                 setIsProcessing(false)
                 setStoreProcessing(false)
                 setCrewaiResponse('')
                 setCurrentJob(null)
+                setResponseData(null) // Clear response data
               }}
               className="px-4 py-2 rounded-md bg-[#111513]/60 border border-[#1E3028] hover:bg-[#00A86B]/10 hover:border-[#00A86B]/40 text-sm font-medium text-[#B7C4B8] hover:text-white transition-all duration-300"
             >
@@ -352,9 +348,26 @@ export default function Home() {
 
 
       {/* Main Content Area with Persistent Chat Panel */}
-      <div className={`flex-1 overflow-hidden relative ${isExpanded && viewMode !== 'home' ? '' : 'flex'}`}>
-        {/* Left: Persistent Chat Panel - Show on all pages except home */}
-        {viewMode !== 'home' && (
+      {viewMode === 'home' ? (
+        // Home view - full width, no chat panel
+        <div className="flex-1 overflow-hidden relative w-full">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key="home"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="h-full w-full"
+            >
+              {renderContent()}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      ) : (
+        // Other views - with chat panel
+        <div className={`flex-1 overflow-hidden relative flex ${isExpanded ? '' : ''}`}>
+          {/* Left: Persistent Chat Panel */}
           <ChatPanel 
             onSendMessage={(message) => handleChatMessage(message)} 
             isProcessing={isProcessing}
@@ -367,33 +380,26 @@ export default function Home() {
               }
             }}
           />
-        )}
 
-        {/* Right: Main Content - Hide when chat is expanded */}
-        {!isExpanded && viewMode !== 'home' && (
-          <div className="flex-1 overflow-hidden relative">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={viewMode}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-                className="h-full w-full"
-              >
-                {renderContent()}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        )}
-        
-        {/* Show home view when chat is not expanded and viewMode is home */}
-        {!isExpanded && viewMode === 'home' && (
-          <div className="flex-1 overflow-hidden relative">
-            {renderContent()}
-          </div>
-        )}
-      </div>
+          {/* Right: Main Content - Hide when chat is expanded */}
+          {!isExpanded && (
+            <div className="flex-1 overflow-hidden relative">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={viewMode}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.3 }}
+                  className="h-full w-full"
+                >
+                  {renderContent()}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -405,13 +411,13 @@ function HomeView({
   isProcessing,
   onSearch
 }: { 
-  onQuickAction: (action: string, category?: 'insights' | 'trends' | 'contracts' | 'documents') => void
+  onQuickAction: (action: string, category?: 'insights' | 'trends' | 'property' | 'analytics') => void
   onCrewAIQuery: (query: string, files?: any[]) => Promise<void>
   onDocumentUpload: (file: File) => void
   isProcessing: boolean
   onSearch: (query: string, force?: boolean) => Promise<void>
 }) {
-  const handlePromptSelect = (prompt: string, category: 'insights' | 'trends' | 'contracts' | 'documents') => {
+  const handlePromptSelect = (prompt: string, category: 'insights' | 'trends' | 'property' | 'analytics') => {
     onQuickAction(prompt, category)
   }
 
@@ -430,8 +436,8 @@ function HomeView({
   }
 
   return (
-    <div className="h-full w-full flex items-center justify-center overflow-y-auto relative">
-      <div className="w-full max-w-5xl px-4 md:px-6 py-12 md:py-20 flex flex-col items-center justify-center min-h-screen">
+    <div className="h-full w-full flex items-center justify-center overflow-y-auto relative pt-16">
+      <div className="w-full max-w-5xl px-4 md:px-6 py-12 md:py-20 flex flex-col items-center justify-center">
         {/* Greeting Section */}
         <HomeGreeting userName="Jordan" />
 

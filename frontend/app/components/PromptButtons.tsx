@@ -5,65 +5,73 @@ import { RefreshCw, MessageCircle } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 interface PromptButtonsProps {
-  onPromptSelect: (prompt: string, category: 'insights' | 'trends' | 'contracts' | 'documents') => void
+  onPromptSelect: (prompt: string, category: 'insights' | 'trends' | 'property' | 'analytics') => void
   onRefresh?: () => void
 }
 
-// Prompt categories with multiple AI-style questions
+// Prompt categories focused on property discovery, analytics, and insights (no document/OCR mentions)
 const promptCategories = {
+  property: [
+    "Discover high-value properties in your area",
+    "Show me top-performing listings in Dallas",
+    "Find properties under $500k in Austin",
+    "Which properties have the best ROI?",
+    "Show me properties with high sustainability scores",
+    "Compare property portfolios by ROI",
+    "What are the best investment properties in Houston?",
+    "Find apartments near downtown with good amenities",
+    "Show me properties with the highest rental yields",
+    "Which listings have the best walkability ratings?",
+  ],
+  analytics: [
+    "Predict upcoming market trends",
+    "Predict the 2025 market trend in Austin",
+    "How will property values change next quarter?",
+    "What's the forecast for commercial real estate?",
+    "Predict rental yield trends for the next 12 months",
+    "Which markets are showing the strongest growth?",
+    "How will interest rates affect property values?",
+    "Analyze price growth trends over the last 5 years",
+    "What are the market trends for sustainable properties?",
+    "Predict how lease rates will shift next quarter",
+  ],
   insights: [
-    "What's the rental yield for Dream House Reality?",
-    "Show me top-performing listings in Dallas.",
+    "Summarize property insights and performance",
+    "What's the rental yield for this property?",
     "Is this property a good long-term investment?",
-    "Which Dallas properties are expected to appreciate most in 2025?",
-    "What's the ROI for properties under $500k in Austin?",
-    "Analyze the market value trends for commercial properties in Houston.",
-    "Show me properties with the highest sustainability scores.",
-    "Which listings have the best walkability and safety ratings?",
-    "Compare investment potential across different property types.",
-    "What are the maintenance costs for properties in this portfolio?",
+    "Compare investment potential across property types",
+    "What are the maintenance costs for this portfolio?",
+    "Show me top insights from my property data",
+    "What are the pros and cons of this property?",
+    "Analyze market value trends for commercial properties",
+    "Which properties are expected to appreciate most?",
+    "Provide a comprehensive property analysis",
   ],
   trends: [
-    "Predict the 2025 market trend in Austin.",
-    "How have office lease prices changed this year?",
-    "Which cities are showing growth in commercial properties?",
-    "Predict how lease rates will shift next quarter.",
-    "What's the forecast for commercial real estate in Dallas?",
-    "Analyze price growth trends over the last 5 years.",
-    "Which markets are showing the strongest appreciation?",
-    "Predict rental yield trends for the next 12 months.",
-    "How will interest rates affect property values?",
-    "Show me market trends for sustainable properties.",
-  ],
-  contracts: [
-    "Analyze the compliance of this lease document.",
-    "Summarize clauses from the uploaded sustainability plan.",
-    "Which contracts are expiring soon?",
-    "Extract key terms from this rental agreement.",
-    "Identify all rent escalation clauses in these contracts.",
-    "Check compliance scores for all lease documents.",
-    "Which contracts have expiring terms in the next 6 months?",
-    "Analyze risk factors in the uploaded contract.",
-    "Summarize financial obligations from these agreements.",
-    "Extract all renewal options from lease documents.",
-  ],
-  documents: [
-    "Summarize this report into key takeaways.",
-    "Extract all financial metrics from the Q2 PDF.",
-    "Show all clauses related to rent escalation.",
-    "Summarize this contract and highlight expiring clauses.",
-    "Extract property details from the uploaded document.",
-    "What are the key compliance issues in this document?",
-    "Summarize the financial terms from this agreement.",
-    "Extract all dates and deadlines from this document.",
-    "What are the main obligations outlined in this contract?",
-    "Summarize sustainability requirements from this plan.",
+    "Compare property portfolios by ROI",
+    "Chat with your AI real estate analyst",
+    "How have property prices changed this year?",
+    "Which cities are showing growth in real estate?",
+    "Show me market performance metrics",
+    "What are the current market conditions?",
+    "Analyze trends across different property types",
+    "Which areas have the best growth potential?",
+    "What's driving property value changes?",
+    "Show me comparative market analysis",
   ],
 }
 
-// Get a random prompt from each category
+// Get a random prompt from each category (now 4 property-focused categories)
 function getRandomPrompts(): Array<{ text: string; category: keyof typeof promptCategories }> {
   return [
+    {
+      text: promptCategories.property[Math.floor(Math.random() * promptCategories.property.length)],
+      category: 'property',
+    },
+    {
+      text: promptCategories.analytics[Math.floor(Math.random() * promptCategories.analytics.length)],
+      category: 'analytics',
+    },
     {
       text: promptCategories.insights[Math.floor(Math.random() * promptCategories.insights.length)],
       category: 'insights',
@@ -71,14 +79,6 @@ function getRandomPrompts(): Array<{ text: string; category: keyof typeof prompt
     {
       text: promptCategories.trends[Math.floor(Math.random() * promptCategories.trends.length)],
       category: 'trends',
-    },
-    {
-      text: promptCategories.contracts[Math.floor(Math.random() * promptCategories.contracts.length)],
-      category: 'contracts',
-    },
-    {
-      text: promptCategories.documents[Math.floor(Math.random() * promptCategories.documents.length)],
-      category: 'documents',
     },
   ]
 }

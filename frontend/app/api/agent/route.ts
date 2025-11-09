@@ -6,7 +6,23 @@ export type IntentType = 'property_discovery' | 'predictive_analytics' | 'chat' 
 function classifyIntent(query: string): IntentType {
   const lowerQuery = query.toLowerCase()
   
-  // Property discovery - highest priority for property-related queries
+  // Document intelligence - ONLY trigger on explicit document/upload/PDF mentions
+  // Very restrictive to avoid false positives from general queries
+  // Examples: "analyze this PDF", "upload contract", "extract from document", "scan PDF file"
+  if (
+    lowerQuery.includes('pdf') ||
+    (lowerQuery.includes('upload') && (lowerQuery.includes('document') || lowerQuery.includes('contract') || lowerQuery.includes('file') || lowerQuery.includes('pdf'))) ||
+    (lowerQuery.includes('document') && (lowerQuery.includes('upload') || lowerQuery.includes('analyze') || lowerQuery.includes('extract') || lowerQuery.includes('scan') || lowerQuery.includes('read'))) ||
+    (lowerQuery.includes('contract') && (lowerQuery.includes('upload') || lowerQuery.includes('analyze') || lowerQuery.includes('extract') || lowerQuery.includes('pdf') || lowerQuery.includes('document'))) ||
+    (lowerQuery.includes('extract') && (lowerQuery.includes('pdf') || lowerQuery.includes('document') || lowerQuery.includes('contract') || lowerQuery.includes('clause'))) ||
+    (lowerQuery.includes('scan') && (lowerQuery.includes('document') || lowerQuery.includes('pdf') || lowerQuery.includes('text'))) ||
+    lowerQuery.includes('ocr') ||
+    lowerQuery.includes('text recognition')
+  ) {
+    return 'document_intelligence'
+  }
+  
+  // Property discovery - high priority for property-related queries
   if (
     lowerQuery.includes('house') || 
     lowerQuery.includes('property') || 
@@ -17,17 +33,22 @@ function classifyIntent(query: string): IntentType {
     lowerQuery.includes('listings') ||
     lowerQuery.includes('home') ||
     lowerQuery.includes('homes') ||
+    lowerQuery.includes('apartment') ||
+    lowerQuery.includes('apartments') ||
     lowerQuery.includes('real estate') ||
     lowerQuery.includes('search property') ||
     lowerQuery.includes('find property') ||
     lowerQuery.includes('show me property') ||
+    (lowerQuery.includes('discover') && (lowerQuery.includes('property') || lowerQuery.includes('properties'))) ||
+    (lowerQuery.includes('search') && (lowerQuery.includes('property') || lowerQuery.includes('apartment') || lowerQuery.includes('home'))) ||
+    (lowerQuery.includes('find') && (lowerQuery.includes('property') || lowerQuery.includes('apartment') || lowerQuery.includes('home'))) ||
     lowerQuery.includes('zillow') ||
     lowerQuery.includes('airbnb')
   ) {
     return 'property_discovery'
   }
   
-  // Predictive analytics
+  // Predictive analytics - market trends, forecasts, predictions
   if (
     lowerQuery.includes('forecast') ||
     lowerQuery.includes('predict') ||
@@ -35,35 +56,18 @@ function classifyIntent(query: string): IntentType {
     lowerQuery.includes('trend') ||
     lowerQuery.includes('trends') ||
     lowerQuery.includes('growth') ||
-    lowerQuery.includes('performance') ||
     lowerQuery.includes('analytics') ||
-    lowerQuery.includes('analyze') ||
     lowerQuery.includes('chart') ||
     lowerQuery.includes('graph') ||
     lowerQuery.includes('visualize') ||
     lowerQuery.includes('metric') ||
-    lowerQuery.includes('kpi')
+    lowerQuery.includes('kpi') ||
+    (lowerQuery.includes('analyze') && (lowerQuery.includes('market') || lowerQuery.includes('trend') || lowerQuery.includes('performance') || lowerQuery.includes('portfolio')))
   ) {
     return 'predictive_analytics'
   }
   
-  // Document intelligence
-  if (
-    lowerQuery.includes('document') ||
-    lowerQuery.includes('contract') ||
-    lowerQuery.includes('lease') ||
-    lowerQuery.includes('agreement') ||
-    lowerQuery.includes('clause') ||
-    lowerQuery.includes('clauses') ||
-    lowerQuery.includes('extract') ||
-    lowerQuery.includes('upload') ||
-    lowerQuery.includes('report') ||
-    lowerQuery.includes('pdf')
-  ) {
-    return 'document_intelligence'
-  }
-  
-  // Insight summarizer
+  // Insight summarizer - summaries, insights, pros/cons, comparisons
   if (
     lowerQuery.includes('insight') ||
     lowerQuery.includes('insights') ||
@@ -73,7 +77,11 @@ function classifyIntent(query: string): IntentType {
     lowerQuery.includes('dashboard') ||
     lowerQuery.includes('combine') ||
     lowerQuery.includes('consolidate') ||
-    lowerQuery.includes('all data')
+    lowerQuery.includes('all data') ||
+    lowerQuery.includes('pros') ||
+    lowerQuery.includes('cons') ||
+    lowerQuery.includes('compare') ||
+    lowerQuery.includes('comparison')
   ) {
     return 'insight_summarizer'
   }
@@ -299,15 +307,15 @@ export async function POST(request: NextRequest) {
       response.title = 'Chat'
       const lowerQuery = query.toLowerCase()
       
-      // Generate contextual responses for general queries
+      // Generate contextual responses for general queries (NO document/OCR mentions)
       if (lowerQuery.includes('what can you do') || lowerQuery.includes('what do you do') || lowerQuery.includes('help')) {
-        response.content = 'I\'m CURA, your AI real estate analyst. I can help you with:\n\n• Search and discover properties\n• Analyze trends and make predictions\n• Extract insights from documents\n• Provide comprehensive summaries\n• Answer questions about your portfolio\n\nWhat would you like to explore?'
+        response.content = 'I\'m CURA, your AI real estate analyst. I can help you with:\n\n• Discover and search for properties\n• Predict market trends and analytics\n• Analyze property insights and performance\n• Compare property portfolios by ROI\n• Answer questions about real estate markets\n\nWhat would you like to explore?'
       } else if (lowerQuery.includes('tell me about') || lowerQuery.includes('explain')) {
-        response.content = `I'd be happy to help explain "${query}". Could you provide more context? For example:\n\n• Are you asking about a specific property?\n• Do you need analytics or predictions?\n• Are you looking for document insights?\n\nFeel free to ask me anything about real estate!`
+        response.content = `I'd be happy to help explain "${query}". Could you provide more context? For example:\n\n• Are you asking about a specific property?\n• Do you need market analytics or predictions?\n• Are you looking for property insights or comparisons?\n\nFeel free to ask me anything about real estate!`
       } else if (lowerQuery.includes('market') || lowerQuery.includes('trends')) {
-        response.content = 'The real estate market is showing strong growth indicators. Would you like me to:\n\n• Analyze specific market trends?\n• Provide predictive analytics?\n• Show you property discoveries?\n\nJust ask, and I\'ll dive deeper into the data!'
+        response.content = 'The real estate market is showing strong growth indicators. Would you like me to:\n\n• Analyze specific market trends?\n• Provide predictive analytics?\n• Show you property discoveries?\n• Compare portfolio performance?\n\nJust ask, and I\'ll dive deeper into the data!'
       } else {
-        response.content = `I understand you're asking about "${query}". As your AI real estate analyst, I can help you with property discovery, predictive analytics, document intelligence, and comprehensive insights. What specific information are you looking for?`
+        response.content = `I understand you're asking about "${query}". As your AI real estate analyst, I can help you with property discovery, predictive analytics, market insights, and comprehensive property analysis. What specific information are you looking for?`
       }
     }
     // Document Intelligence Response
