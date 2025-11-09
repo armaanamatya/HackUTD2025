@@ -2,7 +2,7 @@
 
 import sys
 from pathlib import Path
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Request, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, Any, Optional, List
@@ -25,11 +25,19 @@ logger = logging.getLogger(__name__)
 
 # Add src directory to path
 sys.path.append(str(Path(__file__).parent / "src"))
+sys.path.append(str(Path(__file__).parent.parent))
 
+<<<<<<< Updated upstream
 from src.crews import PropertyInsightsCrew, ReportGenerationCrew, ResponseRoutingCrew
 from config import llm_config
 from config.database import connect_to_mongo, close_mongo_connection
 from config.models import AnalysisJob, PropertyInsight, RealEstateReport, FileUpload, MarketListing, JobStatus, JobType
+=======
+from src.crews import PropertyInsightsCrew, ReportGenerationCrew, ChatCrew
+from src.services.document_service import DocumentService
+from config import llm_config
+from parser.gemini_ocr_service import GeminiOCRService
+>>>>>>> Stashed changes
 
 app = FastAPI(
     title="CrewAI Agent API",
@@ -82,6 +90,7 @@ async def shutdown_event():
 # In-memory storage for job tracking
 job_store: Dict[str, Dict[str, Any]] = {}
 
+<<<<<<< Updated upstream
 
 def _normalize_json_result(raw: str) -> str:
     """Attempt to return a clean JSON string from agent output.
@@ -130,6 +139,11 @@ def _normalize_json_result(raw: str) -> str:
             pass
 
     return raw
+=======
+# Initialize services
+document_service = DocumentService()
+ocr_service = GeminiOCRService()
+>>>>>>> Stashed changes
 
 class ResearchRequest(BaseModel):
     topic: str
@@ -167,6 +181,27 @@ class JobResponse(BaseModel):
     result: Optional[str] = None
     error: Optional[str] = None
 
+class DocumentUploadResponse(BaseModel):
+    document_id: str
+    filename: str
+    status: str
+    message: str
+    text_length: Optional[int] = None
+    metrics: Optional[Dict[str, Any]] = None
+    clauses_count: Optional[int] = None
+
+class DocumentListResponse(BaseModel):
+    documents: List[Dict[str, Any]]
+    total_count: int
+
+class ChatRequest(BaseModel):
+    message: str
+    include_document_context: bool = True
+
+class ChatResponse(BaseModel):
+    response: str
+    documents_used: List[str]
+
 @app.get("/")
 async def root():
     return {
@@ -181,9 +216,18 @@ async def root():
             "/respond-with-files": "POST - Classify and generate response with file context",
             "/jobs/{job_id}": "GET - Get job status and results",
             "/jobs": "GET - List all jobs",
+<<<<<<< Updated upstream
             "/listings": "GET - Get market listings",
             "/listings/search": "POST - Search market listings",
             "/config": "GET - Show LLM configuration"
+=======
+            "/config": "GET - Show LLM configuration",
+            "/upload-document": "POST - Upload and process PDF/document with OCR",
+            "/documents": "GET - List all uploaded documents",
+            "/documents/{doc_id}": "GET - Get specific document details",
+            "/documents/{doc_id}": "DELETE - Delete a document",
+            "/chat": "POST - Chat with document context"
+>>>>>>> Stashed changes
         }
     }
 
@@ -330,6 +374,7 @@ async def start_project_planning_with_files(request: ProjectPlanningWithFilesReq
     
     return JobResponse(**job_store[job_id])
 
+<<<<<<< Updated upstream
 # Helper function to clean NaN values from dictionaries
 def clean_nan_values(obj: Any) -> Any:
     """Recursively convert NaN values to None for JSON serialization"""
@@ -519,6 +564,210 @@ async def start_response_with_files(request: RespondWithFilesRequest, background
     background_tasks.add_task(run_response_with_files_job, job_id, request.user_query, request.files)
     
     return JobResponse(**job_store[job_id])
+=======
+@app.post("/upload-document", response_model=DocumentUploadResponse)
+async def upload_document(file: UploadFile = File(...)):
+    """Upload and process a PDF or image document with OCR."""
+    start_time = time.time()
+    logger.info(f"Document upload started | Filename: {file.filename} | Content type: {file.content_type}")
+    
+    try:
+        # Validate file type
+        allowed_types = ["application/pdf", "image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"]
+        if file.content_type not in allowed_types:
+            logger.warning(f"Invalid file type uploaded | Type: {file.content_type} | Filename: {file.filename}")
+            raise HTTPException(status_code=400, detail=f"Unsupported file type: {file.content_type}")
+        
+        # Read file
+        file_bytes = await file.read()
+        file_size = len(file_bytes)
+        logger.info(f"File read successfully | Size: {file_size} bytes | Filename: {file.filename}")
+        
+        # Process with OCR
+        logger.info(f"Starting OCR processing | Filename: {file.filename}")
+        ocr_start = time.time()
+        
+        ocr_result = ocr_service.process_document_bytes(
+            file_bytes=file_bytes,
+            file_name=file.filename,
+            mime_type=file.content_type
+        )
+        
+        ocr_duration = time.time() - ocr_start
+        text_length = len(ocr_result.get("text", ""))
+        clauses_count = len(ocr_result.get("clauses", []))
+        logger.info(f"OCR processing completed | Duration: {ocr_duration:.2f}s | Text length: {text_length} chars | Clauses: {clauses_count}")
+        
+        # Store document
+        logger.info(f"Storing document | Filename: {file.filename}")
+        doc_id = document_service.store_document(
+            file_bytes=file_bytes,
+            filename=file.filename,
+            mime_type=file.content_type,
+            ocr_result=ocr_result
+        )
+        
+        total_duration = time.time() - start_time
+        logger.info(f"Document upload completed | ID: {doc_id} | Total duration: {total_duration:.2f}s | Filename: {file.filename}")
+        
+        return DocumentUploadResponse(
+            document_id=doc_id,
+            filename=file.filename,
+            status="success",
+            message="Document uploaded and processed successfully",
+            text_length=text_length,
+            metrics=ocr_result.get("metrics"),
+            clauses_count=clauses_count
+        )
+        
+    except Exception as e:
+        duration = time.time() - start_time
+        logger.error(f"Document upload failed | Duration: {duration:.2f}s | Error: {str(e)} | Filename: {file.filename}")
+        raise HTTPException(status_code=500, detail=f"Error processing document: {str(e)}")
+
+@app.get("/documents", response_model=DocumentListResponse)
+async def list_documents():
+    """List all uploaded documents."""
+    logger.info("Listing documents request received")
+    
+    try:
+        documents = document_service.list_documents()
+        logger.info(f"Documents listed successfully | Count: {len(documents)}")
+        
+        return DocumentListResponse(
+            documents=documents,
+            total_count=len(documents)
+        )
+    except Exception as e:
+        logger.error(f"Error listing documents: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error listing documents: {str(e)}")
+
+@app.get("/documents/{doc_id}")
+async def get_document(doc_id: str):
+    """Get details for a specific document."""
+    logger.info(f"Document details request | ID: {doc_id}")
+    
+    try:
+        metadata = document_service.get_document_metadata(doc_id)
+        if not metadata:
+            logger.warning(f"Document not found | ID: {doc_id}")
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        ocr_results = document_service.get_document_ocr_results(doc_id)
+        
+        response = {
+            "metadata": metadata,
+            "ocr_results": ocr_results
+        }
+        
+        logger.info(f"Document details retrieved successfully | ID: {doc_id}")
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting document details | ID: {doc_id} | Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting document: {str(e)}")
+
+@app.delete("/documents/{doc_id}")
+async def delete_document(doc_id: str):
+    """Delete a document."""
+    logger.info(f"Document deletion request | ID: {doc_id}")
+    
+    try:
+        success = document_service.delete_document(doc_id)
+        if not success:
+            logger.warning(f"Document not found for deletion | ID: {doc_id}")
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        logger.info(f"Document deleted successfully | ID: {doc_id}")
+        return {"message": f"Document {doc_id} deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting document | ID: {doc_id} | Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error deleting document: {str(e)}")
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat_with_documents(request: ChatRequest, background_tasks: BackgroundTasks):
+    """Chat with the AI using document context and current agent implementation."""
+    start_time = time.time()
+    logger.info(f"Chat request received | Message length: {len(request.message)} chars | Include context: {request.include_document_context}")
+    
+    try:
+        # Prepare document context if requested
+        document_context = ""
+        documents_used = []
+        
+        if request.include_document_context:
+            logger.info("Preparing OCR document context for chat")
+            
+            # Get all documents with their OCR results
+            documents_list = document_service.list_documents()
+            context_parts = []
+            
+            for doc in documents_list:
+                doc_id = doc["document_id"]
+                filename = doc.get("original_filename", "Unknown")
+                
+                # Get OCR results including text, metrics, and clauses
+                ocr_results = document_service.get_document_ocr_results(doc_id)
+                if ocr_results:
+                    doc_context = f"=== Document: {filename} ===\n"
+                    
+                    # Add extracted text
+                    extracted_text = ocr_results.get("extracted_text", "")
+                    if extracted_text:
+                        doc_context += f"Extracted Text:\n{extracted_text}\n\n"
+                    
+                    # Add metrics if available
+                    metrics = ocr_results.get("metrics", {})
+                    if metrics:
+                        doc_context += f"Key Metrics:\n"
+                        for key, value in metrics.items():
+                            if value is not None:
+                                doc_context += f"- {key}: {value}\n"
+                        doc_context += "\n"
+                    
+                    # Add clauses if available
+                    clauses = ocr_results.get("clauses", [])
+                    if clauses:
+                        doc_context += f"Important Clauses:\n"
+                        for clause in clauses:
+                            title = clause.get("title", "Unknown")
+                            summary = clause.get("summary", "")
+                            doc_context += f"- {title}: {summary}\n"
+                        doc_context += "\n"
+                    
+                    context_parts.append(doc_context)
+                    documents_used.append(filename)
+            
+            document_context = "\n".join(context_parts)
+            logger.info(f"OCR document context prepared | Documents: {len(documents_used)} | Context length: {len(document_context)} chars")
+        
+        # Use the ChatCrew with the current agent implementation
+        chat_crew = ChatCrew()
+        logger.info("Running ChatCrew with OCR document context")
+        result = chat_crew.run_chat(
+            user_query=request.message,
+            document_context=document_context
+        )
+        
+        duration = time.time() - start_time
+        response_length = len(str(result))
+        logger.info(f"Chat response generated | Duration: {duration:.2f}s | Response length: {response_length} chars | Documents used: {len(documents_used)}")
+        
+        return ChatResponse(
+            response=str(result),
+            documents_used=documents_used
+        )
+        
+    except Exception as e:
+        duration = time.time() - start_time
+        logger.error(f"Chat request failed | Duration: {duration:.2f}s | Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error processing chat request: {str(e)}")
+>>>>>>> Stashed changes
 
 async def run_research_job(job_id: str, topic: str):
     start_time = time.time()
