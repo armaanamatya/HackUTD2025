@@ -69,3 +69,8 @@ crewai-llama-system/.crewai/
 # Temporary files
 *.tmp
 *.temp
+
+# Ignore Python bytecode files
+*.pyc
+*.pyo
+*.pyd
