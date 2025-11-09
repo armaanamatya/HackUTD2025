@@ -6,7 +6,7 @@ import { Zap, Sparkles, Search, Upload, FileText, X } from 'lucide-react'
 import ChatPanel from './components/ChatPanel'
 import PropertyDiscovery from './components/PropertyDiscovery'
 import PredictiveAnalytics from './components/PredictiveAnalytics'
-import ChatResponse from './components/ChatResponse'
+import { useChatStore } from './stores/chatStore'
 import DocumentInsights from './components/DocumentInsights'
 import InsightSummaryDashboard from './components/InsightSummaryDashboard'
 import HomeGreeting from './components/HomeGreeting'
@@ -14,19 +14,21 @@ import PromptButtons from './components/PromptButtons'
 import ChatInputBar from './components/ChatInputBar'
 import { AgentCard } from './types'
 
-type ViewMode = 'home' | 'property' | 'analytics' | 'chat' | 'document' | 'insights'
+type ViewMode = 'home' | 'property' | 'analytics' | 'document' | 'insights'
 
 export default function Home() {
   const [query, setQuery] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('home')
   const [responseData, setResponseData] = useState<any>(null)
+  const { addMessage, setIsProcessing: setStoreProcessing } = useChatStore()
 
   const handleSearch = async (searchQuery?: string) => {
     const finalQuery = searchQuery || query
     if (!finalQuery.trim() || isProcessing) return
 
     setIsProcessing(true)
+    setStoreProcessing(true)
 
     try {
       const response = await fetch('/api/agent', {
@@ -43,16 +45,27 @@ export default function Home() {
         'predictive_analytics': 'analytics',
         'document_intelligence': 'document',
         'insight_summarizer': 'insights',
-        'smart_search': 'chat',
       }
 
-      setViewMode(modeMap[data.type] || 'chat')
+      // Add assistant response to chat store
+      if (data.content || data.type === 'smart_search') {
+        const responseText = data.content || `I've processed your request and updated the ${data.type || 'results'} view.`
+        addMessage('assistant', responseText)
+      } else {
+        // For structured responses, add a contextual message
+        const responseText = `I've analyzed your query and prepared the ${modeMap[data.type] || 'results'} view for you.`
+        addMessage('assistant', responseText)
+      }
+
+      setViewMode(modeMap[data.type] || 'home')
       setResponseData(data)
       setQuery('')
     } catch (error) {
       console.error('Error:', error)
+      addMessage('assistant', 'I apologize, but I encountered an error processing your request. Please try again.')
     } finally {
       setIsProcessing(false)
+      setStoreProcessing(false)
     }
   }
 
@@ -151,9 +164,6 @@ export default function Home() {
             chartData={responseData?.data?.chartData}
           />
         )
-      case 'chat':
-        // For chat view, just show the response content (ChatPanel is always on left)
-        return <ChatResponse content={responseData?.content || ''} />
       default:
         return <HomeView onQuickAction={handleQuickAction} onDocumentUpload={handleDocumentUpload} isProcessing={isProcessing} />
     }
@@ -243,6 +253,9 @@ function HomeView({
 
   const handleInputSubmit = (message: string) => {
     if (message.trim()) {
+      // Add user message to store
+      const { addMessage } = useChatStore.getState()
+      addMessage('user', message)
       onQuickAction(message)
     }
   }

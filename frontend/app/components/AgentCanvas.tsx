@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { AgentCard, ResponseType } from '../types'
 import PropertyGrid from './PropertyGrid'
 import AnalyticsView from './AnalyticsView'
-import ChatResponse from './ChatResponse'
 import DocumentInsights from './DocumentInsights'
 import InsightSummaryDashboard from './InsightSummaryDashboard'
 
@@ -46,7 +45,11 @@ export default function AgentCanvas({ cards, onCardRemove }: AgentCanvasProps) {
         return <InsightSummaryDashboard kpis={card.data?.kpis || []} topInsights={card.data?.topInsights || []} recommendations={card.data?.recommendations || []} chartData={card.data?.chartData} />
       case 'smart_search':
       default:
-        return <ChatResponse content={card.content || ''} />
+        return (
+          <div className="h-full w-full flex items-center justify-center p-8">
+            <p className="text-[#C9E3D5] text-lg">View your conversation in the chat sidebar.</p>
+          </div>
+        )
     }
   }
 
