@@ -3,7 +3,8 @@ import requests
 from crewai import LLM
 from dotenv import load_dotenv
 
-load_dotenv()
+# Ensure .env values take precedence over any pre-set environment variables
+load_dotenv(override=True)
 
 
 class LLMConfig:
