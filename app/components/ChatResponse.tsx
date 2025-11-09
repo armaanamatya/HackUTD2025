@@ -8,34 +8,35 @@ interface ChatResponseProps {
 }
 
 export default function ChatResponse({ content }: ChatResponseProps) {
+  const displayContent = content || "I'm ready to help you with your real estate questions. What would you like to know?"
+
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95, y: 20 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="glass rounded-2xl p-8 border border-gray-800 max-w-4xl mx-auto"
-    >
-      <div className="flex items-start gap-4">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: 'spring' }}
-          className="w-12 h-12 rounded-xl bg-gradient-to-br from-neon-cyan/20 to-neon-blue/20 border border-neon-cyan/30 flex items-center justify-center flex-shrink-0"
-        >
-          <Bot size={24} className="text-neon-cyan" />
-        </motion.div>
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-4">
-            <MessageSquare size={18} className="text-neon-cyan" />
-            <h3 className="text-lg font-semibold text-white">Smart Search</h3>
-          </div>
-          <div className="prose prose-invert max-w-none">
-            <p className="text-gray-300 leading-relaxed whitespace-pre-wrap font-mono text-sm">
-              {content}
-            </p>
+    <div className="h-full w-full bg-[#F9FAFB] flex items-center justify-center p-8">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-4xl w-full"
+      >
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center shadow-md flex-shrink-0">
+              <Bot size={24} className="text-white" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <MessageSquare size={18} className="text-blue-600" />
+                <h3 className="text-lg font-semibold text-gray-900">Smart Search Response</h3>
+              </div>
+              <div className="prose max-w-none">
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  {displayContent}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   )
 }

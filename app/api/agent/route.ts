@@ -207,29 +207,91 @@ export async function POST(request: NextRequest) {
       response.content = 'Forecasting portfolio performance and market trends.'
       response.data = {
         metrics: [
-          { label: 'Total Value', value: '$2.4B', change: '+12.5%', trend: 'up' },
-          { label: 'Occupancy Rate', value: '94.2%', change: '+2.1%', trend: 'up' },
-          { label: 'Expenses', value: '$48.2M', change: '-3.2%', trend: 'down' },
-          { label: 'ROI', value: '18.5%', change: '+4.2%', trend: 'up' },
-          { label: 'Revenue Growth', value: '15.3%', change: '+5.1%', trend: 'up' },
+          {
+            label: 'Avg. Asset Value',
+            value: '$98,134',
+            change: '+2.4%',
+            trend: 'up',
+            subtext: 'vs last month',
+            sparklineData: [
+              { value: 92000 }, { value: 93500 }, { value: 91800 },
+              { value: 94200 }, { value: 95800 }, { value: 97100 },
+              { value: 98134 }
+            ],
+            comparisonBadge: { text: 'Above target', type: 'success' },
+            tooltipText: 'Average portfolio asset value trending upward'
+          },
+          {
+            label: 'Market Efficiency',
+            value: '86%',
+            change: '+1.2%',
+            trend: 'up',
+            subtext: '↑ Improving trend',
+            sparklineData: [
+              { value: 82 }, { value: 83 }, { value: 84 },
+              { value: 83.5 }, { value: 85 }, { value: 85.5 },
+              { value: 86 }
+            ],
+            comparisonBadge: { text: 'Strong performance', type: 'success' },
+            tooltipText: 'Portfolio efficiency compared to market average'
+          },
+          {
+            label: 'Risk Factor',
+            value: '14%',
+            change: '+0.8%',
+            trend: 'up',
+            subtext: '⚠ High risk cluster',
+            sparklineData: [
+              { value: 12 }, { value: 12.5 }, { value: 13 },
+              { value: 13.2 }, { value: 13.8 }, { value: 14.2 },
+              { value: 14 }
+            ],
+            comparisonBadge: { text: 'Needs attention', type: 'warning' },
+            tooltipText: 'Overall portfolio risk level - monitor closely'
+          },
         ],
-        chartData: [
-          { name: 'Jan', value: 2400, forecast: null },
-          { name: 'Feb', value: 2800, forecast: null },
-          { name: 'Mar', value: 3200, forecast: null },
-          { name: 'Apr', value: 3500, forecast: null },
-          { name: 'May', value: 3800, forecast: null },
-          { name: 'Jun', value: null, forecast: 4100 },
-          { name: 'Jul', value: null, forecast: 4400 },
-          { name: 'Aug', value: null, forecast: 4700 },
-          { name: 'Sep', value: null, forecast: 5000 },
+        predictions: [
+          { assetType: 'Residential Properties', dropRisk: 0.12, reason: 'Energy inefficiency', assetId: 'residential' },
+          { assetType: 'Commercial Buildings', dropRisk: 0.07, reason: 'Market oversupply', assetId: 'commercial' },
+          { assetType: 'Multi-Family Units', dropRisk: 0.04, reason: 'Stable demand', assetId: 'multifamily' },
+          { assetType: 'Industrial Facilities', dropRisk: 0.09, reason: 'Rising maintenance costs', assetId: 'industrial' },
+          { assetType: 'Mixed-Use Properties', dropRisk: 0.06, reason: 'Moderate risk', assetId: 'mixeduse' },
+          { assetType: 'Vacant Land', dropRisk: 0.03, reason: 'Strong growth signals', assetId: 'land' },
         ],
-        chartType: 'line',
         insights: [
-          'Strong upward trend projected for next quarter',
-          'Occupancy rates expected to exceed 95%',
-          'Cost efficiency improvements continuing',
+          {
+            title: '⚠️ Value Drop Risk — 12%',
+            description: 'Energy inefficiency and rising maintenance costs detected in residential properties across Texas.',
+            confidence: 84,
+            type: 'warning',
+            assetId: 'residential'
+          },
+          {
+            title: '📈 Growth Signal — Commercial',
+            description: 'Strong demand indicators for commercial buildings despite slight oversupply. Consider strategic expansion.',
+            confidence: 91,
+            type: 'growth',
+            assetId: 'commercial'
+          },
+          {
+            title: '🚨 Market Oversupply Alert',
+            description: 'Commercial buildings showing 7% oversupply. Monitor pricing trends closely.',
+            confidence: 78,
+            type: 'alert',
+            assetId: 'commercial'
+          },
+          {
+            title: '✅ Stable Performance — Multi-Family',
+            description: 'Multi-family units show consistent demand and low risk factors. Maintain current strategy.',
+            confidence: 95,
+            type: 'growth',
+            assetId: 'multifamily'
+          },
         ],
+        modelStats: {
+          accuracy: '94.2%',
+          datasetSize: '12.3k entries'
+        }
       }
     }
     // Smart Search Response
