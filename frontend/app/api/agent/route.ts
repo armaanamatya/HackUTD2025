@@ -104,101 +104,112 @@ export async function POST(request: NextRequest) {
 
     // Property Discovery Response
     if (intent === 'property_discovery') {
-      response.title = 'Property Discovery'
-      response.content = `Found ${12} properties matching your search criteria.`
-      response.data = {
-        properties: [
-          {
-            id: 1,
-            image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&h=400&fit=crop',
-            title: 'Dream House Reality',
-            address: 'Evergreen 14 Jakarta, Indonesia',
-            price: '$367.00/month',
-            rating: 4.9,
-            type: 'Home',
-            beds: 4,
-            baths: 3,
-            sqft: '3,200',
-            year: 2020,
-            tags: ['Garden', 'Garage'],
+      try {
+        // Fetch listings from backend MongoDB API
+        const backendUrl = process.env.NEXT_PUBLIC_CREWAI_API_URL || 'http://localhost:8000'
+        const listingsResponse = await fetch(`${backendUrl}/listings?limit=100`)
+        
+        if (!listingsResponse.ok) {
+          throw new Error(`Backend API error: ${listingsResponse.status}`)
+        }
+        
+        const listingsData = await listingsResponse.json()
+        const listings = listingsData.listings || []
+        
+        // Debug: Log first listing to see actual data structure
+        if (listings.length > 0) {
+          console.log('Sample listing from MongoDB:', JSON.stringify(listings[0], null, 2))
+        }
+        
+        // Transform MongoDB listings to frontend Property format
+        const transformedProperties = listings.map((listing: any, index: number) => {
+          // Generate a unique ID - handle different _id formats
+          let id: string
+          if (listing._id) {
+            if (typeof listing._id === 'string') {
+              id = listing._id
+            } else if (listing._id.$oid) {
+              id = listing._id.$oid
+            } else if (listing._id.toString) {
+              id = listing._id.toString()
+            } else {
+              id = `listing-${index}`
+            }
+          } else {
+            id = `listing-${index}`
+          }
+          
+          // Format price
+          const price = listing.listing_price 
+            ? `$${listing.listing_price.toLocaleString()}` 
+            : 'Price not available'
+          
+          // Format address
+          const address = listing.address 
+            ? `${listing.address}${listing.city ? `, ${listing.city}` : ''}${listing.state ? `, ${listing.state}` : ''}`
+            : 'Address not available'
+          
+          // Format square footage
+          const sqft = listing.square_footage 
+            ? `${listing.square_footage.toLocaleString()} sq ft`
+            : 'N/A'
+          
+          // Build tags array from property features
+          const tags: string[] = []
+          if (listing.pool) tags.push('Pool')
+          if (listing.fireplace) tags.push('Fireplace')
+          if (listing.garage_spaces && listing.garage_spaces > 0) tags.push('Garage')
+          if (listing.air_conditioning) tags.push('AC')
+          if (tags.length === 0) tags.push(listing.property_type || 'Property')
+          
+          // Default image (you might want to use listing.photos if available)
+          const image = listing.photos && listing.photos.length > 0
+            ? listing.photos[0]
+            : 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&h=400&fit=crop'
+          
+          return {
+            id,
+            title: listing.address || `Property ${index + 1}`,
+            address,
+            price,
+            rating: 4.5, // Default rating (you might calculate this from listing data)
+            image,
+            type: listing.property_type || 'Property',
+            beds: listing.bedrooms ?? null, // Use nullish coalescing to preserve 0 values
+            baths: listing.bathrooms ?? null,
+            sqft,
+            tags,
+            images: listing.photos || [image],
+            description: listing.description || `${listing.property_type || 'Property'} in ${listing.city || 'the area'}`,
+            rooms: listing.bedrooms ?? null, // Use bedrooms as rooms for now
+            kitchens: null, // Not available in MongoDB schema
+            garage: listing.garage_spaces ?? null,
+          }
+        })
+        
+        response.title = 'Property Discovery'
+        response.content = `Found ${transformedProperties.length} properties matching your search criteria.`
+        response.data = {
+          properties: transformedProperties,
+          filters: {
+            locations: [...new Set(listings.map((l: any) => `${l.city || ''}, ${l.state || ''}`).filter(Boolean))],
+            priceRange: {
+              min: listings.length > 0 ? Math.min(...listings.map((l: any) => l.listing_price || 0).filter((p: number) => p > 0)) : 0,
+              max: listings.length > 0 ? Math.max(...listings.map((l: any) => l.listing_price || 0)) : 0,
+            },
+            propertyTypes: [...new Set(listings.map((l: any) => l.property_type).filter(Boolean))],
+            amenities: ['Pool', 'Garage', 'Fireplace', 'AC'],
           },
-          {
-            id: 2,
-            image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&h=400&fit=crop',
-            title: 'Atap Langit Homes',
-            address: 'Business Park Jakarta, Indonesia',
-            price: '$278.00/month',
-            rating: 4.7,
-            type: 'Apartment',
-            beds: 2,
-            baths: 2,
-            sqft: '1,800',
-            year: 2021,
-            tags: ['Gym', 'Pool'],
-          },
-          {
-            id: 3,
-            image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=400&fit=crop',
-            title: 'Midnight Ridge Villa',
-            address: '440 Thamrin Jakarta, Indonesia',
-            price: '$452.00/month',
-            rating: 4.8,
-            type: 'Villa',
-            beds: 6,
-            baths: 4,
-            sqft: '4,500',
-            year: 2022,
-            tags: ['Garden', 'Garage', 'Pool'],
-          },
-          {
-            id: 4,
-            image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&h=400&fit=crop',
-            title: 'Unity Urban Homes',
-            address: 'Commerce Drive Jakarta, Indonesia',
-            price: '$325.00/month',
-            rating: 4.6,
-            type: 'Home',
-            beds: 3,
-            baths: 2,
-            sqft: '2,600',
-            year: 2019,
-            tags: ['Garden'],
-          },
-          {
-            id: 5,
-            image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=600&h=400&fit=crop',
-            title: 'Lalaland Thick Villa',
-            address: 'Innovation Blvd Jakarta, Indonesia',
-            price: '$512.00/month',
-            rating: 4.9,
-            type: 'Villa',
-            beds: 5,
-            baths: 4,
-            sqft: '4,200',
-            year: 2023,
-            tags: ['Garden', 'Garage', 'Gym'],
-          },
-          {
-            id: 6,
-            image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&h=400&fit=crop',
-            title: 'Modern Skyline Condo',
-            address: 'Financial District Jakarta, Indonesia',
-            price: '$289.00/month',
-            rating: 4.5,
-            type: 'Condo',
-            beds: 2,
-            baths: 1,
-            sqft: '1,500',
-            year: 2021,
-            tags: ['Gym', 'Pool'],
-          },
-        ],
-        filters: {
-          locations: ['Jakarta, Indonesia', 'Semarang, Indonesia'],
-          priceRange: { min: 0, max: 5000 },
-          propertyTypes: ['Home', 'Apartment', 'Villa', 'Condo'],
-          amenities: ['Garden', 'Gym', 'Garage', 'Pool'],
-        },
+        }
+      } catch (error) {
+        console.error('Error fetching listings from backend:', error)
+        // Fallback to empty results or show error message
+        response.title = 'Property Discovery'
+        response.content = 'Unable to fetch properties from database. Please check if the backend server is running.'
+        response.data = {
+          properties: [],
+          filters: {},
+        }
       }
     }
     // Predictive Analytics Response

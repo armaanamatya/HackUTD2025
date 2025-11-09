@@ -42,30 +42,33 @@ class ReportGenerationCrew:
             expected_output="Comprehensive market analysis with strategic insights for real estate project planning"
         )
         
-        planning_task = Task(
-            description="""Create a detailed real estate project plan based on the market analysis.
-            Develop a strategic roadmap with actionable steps and clear objectives.
+        answer_task = Task(
+            description="""Create a concise, comprehensive answer based on the market analysis and search data.
+            Synthesize all relevant information from Tavily and Perplexity searches into a direct, actionable response.
 
-            Your plan should include:
-            1. Executive Summary - Project overview and strategic objectives
-            2. Market Opportunity - Key findings from market analysis
-            3. Project Scope - Detailed description of the real estate project
-            4. Implementation Timeline - Phased approach with key milestones
-            5. Financial Projections - Budget, funding requirements, and ROI estimates
-            6. Risk Management - Potential challenges and mitigation strategies
-            7. Success Metrics - KPIs and measurement criteria
-            8. Next Steps - Immediate action items and recommendations
+            Your answer should be:
+            - Concise but complete, containing all relevant information
+            - Well-structured with clear sections
+            - Focused on key insights and actionable recommendations
+            - Free of unnecessary verbosity while maintaining thoroughness
+            - Based on data from multiple sources (market analysis, web searches)
 
-            Make the plan practical and actionable for real estate professionals.
+            Structure your answer as:
+            • Key Findings - Most important insights from the research
+            • Market Summary - Essential market data and trends
+            • Recommendations - Clear, actionable next steps
+            • Supporting Data - Relevant metrics and sources
+
+            Prioritize clarity and usefulness over length. Every sentence should add value.
             """,
             agent=report_agent,
-            expected_output="Complete real estate project plan with timeline, financial projections, and implementation strategy",
+            expected_output="Concise, comprehensive answer containing all relevant information from searches and analysis",
             context=[market_analysis_task]
         )
         
         return Crew(
             agents=[insights_agent, report_agent],
-            tasks=[market_analysis_task, planning_task],
+            tasks=[market_analysis_task, answer_task],
             verbose=True,
             memory=False,
         )

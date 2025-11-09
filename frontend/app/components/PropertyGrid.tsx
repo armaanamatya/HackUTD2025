@@ -13,15 +13,15 @@ interface Property {
   rating: number
   image: string
   type: string
-  beds: number
-  baths: number
+  beds: number | null
+  baths: number | null
   sqft: string
   tags: string[]
   images?: string[]
   description?: string
-  rooms?: number
-  kitchens?: number
-  garage?: number
+  rooms?: number | null
+  kitchens?: number | null
+  garage?: number | null
 }
 
 interface PropertyGridProps {
@@ -419,7 +419,7 @@ export default function PropertyGrid({ properties, filters }: PropertyGridProps)
       {/* Right: Property Details + Map - Fixed */}
       <div className="w-[380px] flex-shrink-0 h-full overflow-hidden">
         <PropertyDetailPanel 
-          property={selectedProperty || displayProperties[0] || null} 
+          property={(selectedProperty || displayProperties[0] || null) as Property | null} 
         />
       </div>
     </div>
