@@ -41,9 +41,26 @@ export default function Home() {
   // Get chat store functions
   const { addMessage, setIsProcessing: setStoreProcessing } = useChatStore()
 
-  const handleSearch = async (searchQuery?: string) => {
+  // Reset processing state when returning to home
+  useEffect(() => {
+    if (viewMode === 'home') {
+      // Reset all processing-related state when returning to home
+      setIsProcessing(false)
+      setStoreProcessing(false)
+      setCrewaiResponse('')
+      setCurrentJob(null)
+      setQuery('')
+    }
+  }, [viewMode, setStoreProcessing])
+
+  const handleSearch = async (searchQuery?: string, force: boolean = false) => {
     const finalQuery = searchQuery || query
-    if (!finalQuery.trim() || isProcessing) return
+    if (!finalQuery.trim()) return
+    // Allow force to bypass isProcessing check (for quick actions)
+    if (!force && isProcessing) {
+      console.log('Search blocked: operation already in progress')
+      return
+    }
 
     setIsProcessing(true)
     setStoreProcessing(true)
@@ -87,9 +104,28 @@ export default function Home() {
     }
   }
 
-  const handleQuickAction = (action: string) => {
-    setQuery(action)
-    handleSearch(action)
+  const handleQuickAction = (action: string, category?: 'insights' | 'trends' | 'contracts' | 'documents') => {
+    // Clear any previous query
+    setQuery('')
+    
+    // Map categories to view modes and trigger appropriate action
+    if (category) {
+      // For document and contract queries, use CrewAI and show chat view
+      // This allows users to upload documents and get AI analysis
+      if (category === 'contracts' || category === 'documents') {
+        handleCrewAIQuery(action)
+        return
+      }
+      
+      // For insights and trends, use the search API which will route to the correct view
+      // The API will determine the view mode based on the query content
+      handleSearch(action, true)
+      return
+    }
+    
+    // Fallback: Force the search to proceed even if isProcessing is true
+    // This ensures buttons always work when clicked
+    handleSearch(action, true)
   }
 
   const handleCrewAIQuery = async (query: string) => {
@@ -126,17 +162,13 @@ export default function Home() {
   }
 
   const handleChatMessage = async (message: string) => {
-    // Check if this should go to CrewAI or existing agent system
-    const crewaiKeywords = ['research', 'analyze', 'plan', 'project', 'study', 'investigate', 'examine']
-    const shouldUseCrewAI = crewaiKeywords.some(keyword => 
-      message.toLowerCase().includes(keyword)
-    )
+    // Route ALL requests to CrewAI
+    log.info('Processing chat message - routing to CrewAI', {
+      messageLength: message.length
+    })
     
-    if (shouldUseCrewAI) {
-      await handleCrewAIQuery(message)
-    } else {
-      await handleSearch(message)
-    }
+    // Always route to CrewAI
+    await handleCrewAIQuery(message)
   }
 
   const handleDocumentUpload = async (file: File) => {
@@ -287,7 +319,13 @@ export default function Home() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setViewMode('home')}
+              onClick={() => {
+                setViewMode('home')
+                setIsProcessing(false)
+                setStoreProcessing(false)
+                setCrewaiResponse('')
+                setCurrentJob(null)
+              }}
               className="px-4 py-2 rounded-md bg-[#111513]/60 border border-[#1E3028] hover:bg-[#00A86B]/10 hover:border-[#00A86B]/40 text-sm font-medium text-[#B7C4B8] hover:text-white transition-all duration-300"
             >
               Back to Home
@@ -333,36 +371,26 @@ function HomeView({
   onDocumentUpload,
   isProcessing 
 }: { 
-  onQuickAction: (action: string) => void
+  onQuickAction: (action: string, category?: 'insights' | 'trends' | 'contracts' | 'documents') => void
   onCrewAIQuery: (query: string, files?: any[]) => Promise<void>
   onDocumentUpload: (file: File) => void
   isProcessing: boolean
 }) {
-  const handlePromptSelect = (prompt: string) => {
-    onQuickAction(prompt)
+  const handlePromptSelect = (prompt: string, category: 'insights' | 'trends' | 'contracts' | 'documents') => {
+    onQuickAction(prompt, category)
   }
 
   const handleInputSubmit = async (message: string, files?: any[]) => {
     if (message.trim() || (files && files.length > 0)) {
-      // Check if this should go to CrewAI or existing agent system
-      const crewaiKeywords = ['research', 'analyze', 'plan', 'project', 'study', 'investigate', 'examine']
-      const shouldUseCrewAI = crewaiKeywords.some(keyword => 
-        message.toLowerCase().includes(keyword)
-      ) || (files && files.length > 0) // Always use CrewAI if files are present
-      
-      log.info('Home input submitted', {
+      // Route ALL requests to CrewAI
+      log.info('Home input submitted - routing to CrewAI', {
         messageLength: message.length,
         hasFiles: !!(files && files.length > 0),
-        fileCount: files?.length || 0,
-        shouldUseCrewAI,
-        matchedKeywords: crewaiKeywords.filter(keyword => message.toLowerCase().includes(keyword))
+        fileCount: files?.length || 0
       })
       
-      if (shouldUseCrewAI) {
-        await onCrewAIQuery(message, files)
-      } else {
-        onQuickAction(message)
-      }
+      // Always route to CrewAI
+      await onCrewAIQuery(message, files)
     }
   }
 
