@@ -1,5 +1,5 @@
 from .agents import BaseAgents
-from .crews import ResearchCrew, ProjectPlanningCrew
+from .crews import PropertyInsightsCrew, ReportGenerationCrew
 from .tools import CustomTools
 
-__all__ = ["BaseAgents", "ResearchCrew", "ProjectPlanningCrew", "CustomTools"]
+__all__ = ["BaseAgents", "PropertyInsightsCrew", "ReportGenerationCrew", "CustomTools"]
