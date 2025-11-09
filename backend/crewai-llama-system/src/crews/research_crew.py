@@ -18,10 +18,16 @@ class ResearchCrew:
         
         # Define tasks
         research_task = Task(
-            description="""Research the given topic thoroughly. 
-            Gather information from multiple sources and identify key insights.
+            description="""Research the given topic thoroughly.
+            Gather information from multiple sources (use web search first) and identify key insights.
             Focus on recent developments, trends, and important facts.
-            
+
+            Tool usage guidelines:
+            - Use web search tools (duckduckgo_search, tavily, perplexity) to find sources.
+            - Use fetch_web_page to read content from a URL.
+            - Use DirectoryReadTool and FileReadTool only for local files; do not pass URLs.
+            - Provide tool inputs as a single key-value dictionary, not arrays.
+
             Topic: {topic}
             """,
             agent=researcher,

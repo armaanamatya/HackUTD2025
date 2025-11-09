@@ -44,6 +44,12 @@ OLLAMA_MODEL=llama3.1:8b-instruct
 LLM_PROVIDER=vllm
 VLLM_BASE_URL=http://localhost:8000/v1
 VLLM_MODEL=meta-llama/Llama-3.1-8B-Instruct
+
+# Or for a local OpenAI-compatible endpoint
+LLM_PROVIDER=local
+LOCAL_BASE_URL=http://localhost:8000/v1
+LOCAL_MODEL=mistralai/mistral-nemo-instruct-2407
+OPENAI_API_KEY=sk-no-key-required
 ```
 
 ### 3. Setup Local LLM
@@ -60,6 +66,11 @@ ollama serve
 pip install vllm
 vllm serve meta-llama/Llama-3.1-8B-Instruct --host 0.0.0.0 --port 8000
 ```
+
+#### Option C: Any OpenAI-Compatible Server
+- Point `LOCAL_BASE_URL` to your server (e.g., `http://localhost:8000/v1`).
+- Set `LOCAL_MODEL` to the model name your server exposes.
+- Use a dummy `OPENAI_API_KEY` (`sk-no-key-required`) if your client requires one.
 
 ## Usage
 
@@ -135,6 +146,17 @@ crewai-llama-system/
 - **Purpose**: Conduct thorough research and create comprehensive reports
 - **Tools**: Web search, file operations
 
+#### Web Research Tools
+- `duckduckgo_search`: zero-config web search, no API key required.
+- `tavily`: high-quality search (requires `TAVILY_API_KEY`).
+- `perplexity`: conversational search (requires `PERPLEXITY_API_KEY`).
+- `fetch_web_page`: fetches and extracts readable content from a URL.
+
+Usage tips:
+- Search first to find sources, then call `fetch_web_page` to read content.
+- Pass tool inputs as single key-value pairs (e.g., `{ "query": "..." }`).
+- Do not pass URLs to file tools; they only accept local paths.
+
 ### 2. Code Analysis Crew
 - **Agents**: Senior Code Analyst, Technical Writer  
 - **Purpose**: Analyze code quality, structure, and provide optimization recommendations
@@ -173,6 +195,7 @@ For optimal performance:
    # Check if LLM server is running
    curl http://localhost:11434/api/tags  # Ollama
    curl http://localhost:8000/v1/models  # vLLM
+   curl http://localhost:8000/v1/models  # Local OpenAI-compatible
    ```
 
 2. **Memory Issues**
@@ -209,3 +232,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [Meta AI](https://ai.meta.com/) - Llama 3.1 model
 - [Ollama](https://ollama.ai/) - Easy local LLM deployment
 - [vLLM](https://github.com/vllm-project/vllm) - High-performance LLM serving
+- [DuckDuckGo Search](https://pypi.org/project/duckduckgo-search/) - Zero-config web search

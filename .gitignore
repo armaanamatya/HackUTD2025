@@ -89,18 +89,50 @@ crewai-llama-system/src/tools/__pycache__/
 crewai-llama-system/src/agents/__pycache__/
 crewai-llama-system/config/__pycache__/
 
-# Node.js
+# Node and JS (root and subprojects)
 node_modules/
+**/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 .pnpm-debug.log*
+.pnpm-store/
 lerna-debug.log*
-
-# Next.js
-.next/
-out/
-build/
-dist/
+.eslintcache
 *.tsbuildinfo
+coverage/
+**/coverage/
+
+# Next.js (root and subprojects like cura)
+.next/
+**/.next/
+out/
+**/out/
+.vercel/
+**/.vercel/
+.turbo/
+build/
+**/build/
 next-env.d.ts
+
+# Vite builds and cache
+dist/
+**/dist/
+.vite/
+**/.vite/
+
+# Project-specific env files (cura)
+cura/.env
+cura/.env.local
+cura/.env.development
+cura/.env.test
+cura/.env.production
+
+# Python tool caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+crewai-llama-system/.pytest_cache/
+crewai-llama-system/.mypy_cache/
+crewai-llama-system/.ruff_cache/
