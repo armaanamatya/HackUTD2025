@@ -12,15 +12,33 @@ import InsightSummaryDashboard from './components/InsightSummaryDashboard'
 import HomeGreeting from './components/HomeGreeting'
 import PromptButtons from './components/PromptButtons'
 import ChatInputBar from './components/ChatInputBar'
+import ChatResponse from './components/ChatResponse'
 import { AgentCard } from './types'
+import { crewaiService, JobResponse } from './services/crewaiService'
 
-type ViewMode = 'home' | 'property' | 'analytics' | 'document' | 'insights'
+// Logging utility
+const log = {
+  info: (message: string, data?: any) => {
+    const timestamp = new Date().toISOString()
+    console.log(`[FRONTEND-MAIN] ${timestamp} | INFO | ${message}`, data || '')
+  },
+  error: (message: string, error?: any) => {
+    const timestamp = new Date().toISOString()
+    console.error(`[FRONTEND-MAIN] ${timestamp} | ERROR | ${message}`, error || '')
+  }
+}
+
+type ViewMode = 'home' | 'property' | 'analytics' | 'document' | 'insights' | 'chat'
 
 export default function Home() {
   const [query, setQuery] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('home')
   const [responseData, setResponseData] = useState<any>(null)
+  const [currentJob, setCurrentJob] = useState<JobResponse | null>(null)
+  const [crewaiResponse, setCrewaiResponse] = useState<string>('')
+  
+  // Get chat store functions
   const { addMessage, setIsProcessing: setStoreProcessing } = useChatStore()
 
   const handleSearch = async (searchQuery?: string) => {
@@ -74,9 +92,51 @@ export default function Home() {
     handleSearch(action)
   }
 
+  const handleCrewAIQuery = async (query: string) => {
+    setIsProcessing(true)
+    setViewMode('chat')
+    
+    try {
+      // Start the CrewAI job
+      const job = await crewaiService.startJob(query)
+      setCurrentJob(job)
+      setCrewaiResponse('Your request is being processed by our AI agents...')
+      
+      // Poll for completion
+      const completedJob = await crewaiService.pollJobCompletion(
+        job.job_id,
+        (statusUpdate) => {
+          setCurrentJob(statusUpdate)
+          if (statusUpdate.status === 'running') {
+            setCrewaiResponse('AI agents are working on your request...')
+          }
+        }
+      )
+      
+      // Set the final result
+      setCrewaiResponse(completedJob.result || 'Request completed successfully')
+      setCurrentJob(completedJob)
+      
+    } catch (error) {
+      console.error('CrewAI Error:', error)
+      setCrewaiResponse(`Error: ${error instanceof Error ? error.message : 'Something went wrong'}`)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
   const handleChatMessage = async (message: string) => {
-    // Handle messages from the chat panel
-    await handleSearch(message)
+    // Check if this should go to CrewAI or existing agent system
+    const crewaiKeywords = ['research', 'analyze', 'plan', 'project', 'study', 'investigate', 'examine']
+    const shouldUseCrewAI = crewaiKeywords.some(keyword => 
+      message.toLowerCase().includes(keyword)
+    )
+    
+    if (shouldUseCrewAI) {
+      await handleCrewAIQuery(message)
+    } else {
+      await handleSearch(message)
+    }
   }
 
   const handleDocumentUpload = async (file: File) => {
@@ -164,8 +224,37 @@ export default function Home() {
             chartData={responseData?.data?.chartData}
           />
         )
+      case 'chat':
+        // For chat view, show either CrewAI response or regular agent response
+        const chatContent = crewaiResponse || responseData?.content || ''
+        return (
+          <div className="p-6">
+            <div className="max-w-4xl mx-auto">
+              {currentJob && (
+                <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-blue-800">
+                      Job Status: {currentJob.status}
+                    </span>
+                    <span className="text-xs text-blue-600">
+                      ID: {currentJob.job_id}
+                    </span>
+                  </div>
+                  {currentJob.status === 'running' && (
+                    <div className="mt-2">
+                      <div className="w-full bg-blue-200 rounded-full h-2">
+                        <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              <ChatResponse content={chatContent} />
+            </div>
+          </div>
+        )
       default:
-        return <HomeView onQuickAction={handleQuickAction} onDocumentUpload={handleDocumentUpload} isProcessing={isProcessing} />
+        return <HomeView onQuickAction={handleQuickAction} onCrewAIQuery={handleCrewAIQuery} onDocumentUpload={handleDocumentUpload} isProcessing={isProcessing} />
     }
   }
 
@@ -215,7 +304,7 @@ export default function Home() {
       <div className="flex-1 overflow-hidden relative flex">
         {/* Left: Persistent Chat Panel - Show on all pages except home */}
         {viewMode !== 'home' && (
-          <ChatPanel onSendMessage={handleChatMessage} isProcessing={isProcessing} />
+          <ChatPanel onSendMessage={(message) => handleChatMessage(message)} isProcessing={isProcessing} />
         )}
 
         {/* Right: Main Content */}
@@ -240,10 +329,12 @@ export default function Home() {
 
 function HomeView({ 
   onQuickAction, 
+  onCrewAIQuery,
   onDocumentUpload,
   isProcessing 
 }: { 
   onQuickAction: (action: string) => void
+  onCrewAIQuery: (query: string, files?: any[]) => Promise<void>
   onDocumentUpload: (file: File) => void
   isProcessing: boolean
 }) {
@@ -251,12 +342,27 @@ function HomeView({
     onQuickAction(prompt)
   }
 
-  const handleInputSubmit = (message: string) => {
-    if (message.trim()) {
-      // Add user message to store
-      const { addMessage } = useChatStore.getState()
-      addMessage('user', message)
-      onQuickAction(message)
+  const handleInputSubmit = async (message: string, files?: any[]) => {
+    if (message.trim() || (files && files.length > 0)) {
+      // Check if this should go to CrewAI or existing agent system
+      const crewaiKeywords = ['research', 'analyze', 'plan', 'project', 'study', 'investigate', 'examine']
+      const shouldUseCrewAI = crewaiKeywords.some(keyword => 
+        message.toLowerCase().includes(keyword)
+      ) || (files && files.length > 0) // Always use CrewAI if files are present
+      
+      log.info('Home input submitted', {
+        messageLength: message.length,
+        hasFiles: !!(files && files.length > 0),
+        fileCount: files?.length || 0,
+        shouldUseCrewAI,
+        matchedKeywords: crewaiKeywords.filter(keyword => message.toLowerCase().includes(keyword))
+      })
+      
+      if (shouldUseCrewAI) {
+        await onCrewAIQuery(message, files)
+      } else {
+        onQuickAction(message)
+      }
     }
   }
 

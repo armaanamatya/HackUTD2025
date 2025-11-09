@@ -17,7 +17,7 @@ export default function WorkspaceContent({
   setCurrentTask,
   onInlineQuestion 
 }: WorkspaceContentProps) {
-  if (workspace === 'dashboard') {
+  if (workspace === WorkspaceType.PROPERTY_DISCOVERY) {
     return (
       <Dashboard 
         currentTask={currentTask} 
@@ -27,7 +27,7 @@ export default function WorkspaceContent({
     )
   }
 
-  if (workspace === 'insights') {
+  if (workspace === WorkspaceType.INSIGHT_SUMMARIZER) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -54,7 +54,7 @@ export default function WorkspaceContent({
     )
   }
 
-  if (workspace === 'reports') {
+  if (workspace === WorkspaceType.DOCUMENT_INTELLIGENCE) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -81,7 +81,7 @@ export default function WorkspaceContent({
     )
   }
 
-  if (workspace === 'predictions') {
+  if (workspace === WorkspaceType.PREDICTIVE_ANALYTICS) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}

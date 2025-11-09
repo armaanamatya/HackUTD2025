@@ -20,3 +20,7 @@ tavily-python
 
 # Additional dependencies for current implementation
 google-generativeai
+
+# FastAPI and web server
+fastapi
+uvicorn[standard]
