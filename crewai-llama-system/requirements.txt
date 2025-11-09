@@ -1,7 +1,22 @@
+# Core CrewAI packages
 crewai
 crewai[tools]
+crewai[google-genai]
+
+# Environment and configuration
 python-dotenv
 pydantic
+
+# HTTP requests and web tools
 requests
+
+# LLM providers and tools
+litellm
 langchain-community
 ollama
+
+# Search tools
+tavily-python
+
+# Additional dependencies for current implementation
+google-generativeai
