@@ -17,6 +17,8 @@ class LLMConfig:
             return self._get_vllm_llm()
         elif self.provider == "gemini":
             return self._get_gemini_llm()
+        elif self.provider == "local":
+            return self._get_local_llm()
         else:
             raise ValueError(f"Unsupported LLM provider: {self.provider}")
     
@@ -38,6 +40,7 @@ class LLMConfig:
             model=f"openai/{model}",
             base_url=base_url,
             temperature=0.7,
+            api_key="sk-no-key-required", # Required for local OpenAI-compatible servers
         )
     
     def _get_gemini_llm(self) -> LLM:
@@ -52,6 +55,16 @@ class LLMConfig:
             temperature=0.7,
         )
     
+    def _get_local_llm(self) -> LLM:
+        base_url = os.getenv("LOCAL_BASE_URL", "http://localhost:8000/v1")
+        model = os.getenv("LOCAL_MODEL", "local-model")
+        
+        return LLM(
+            model=f"openai/{model}",
+            base_url=base_url,
+            temperature=0.7,
+        )
+    
     def get_config_info(self) -> dict:
         if self.provider == "gemini":
             return {
@@ -59,6 +72,13 @@ class LLMConfig:
                 "debug": self.debug,
                 "model": "gemini-2.0-flash-exp",
                 "api_key_set": bool(os.getenv("GEMINI_API_KEY")),
+            }
+        elif self.provider == "local":
+            return {
+                "provider": self.provider,
+                "debug": self.debug,
+                "model": os.getenv("LOCAL_MODEL"),
+                "base_url": os.getenv("LOCAL_BASE_URL"),
             }
         else:
             return {
