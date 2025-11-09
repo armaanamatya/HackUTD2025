@@ -121,10 +121,10 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
   // Calculate aggregate metrics
   const aggregateMetrics = documents.length > 0 ? {
     totalDocuments: documents.length,
-    totalClauses: Math.round(documents.reduce((sum, doc) => sum + doc.metrics.totalClauses, 0) / documents.length),
-    expiringSoon: documents.filter(doc => doc.metrics.expiringSoon).length,
-    averageCompliance: Math.round(documents.reduce((sum, doc) => sum + doc.metrics.complianceScore, 0) / documents.length),
-    totalMonthlyRent: documents.find(doc => doc.metrics.rentAmount !== 'N/A')?.metrics.rentAmount || 'N/A',
+    totalClauses: Math.round(documents.reduce((sum, doc) => sum + (doc.metrics?.totalClauses || 0), 0) / documents.length),
+    expiringSoon: documents.filter(doc => doc.metrics?.expiringSoon).length,
+    averageCompliance: Math.round(documents.reduce((sum, doc) => sum + (doc.metrics?.complianceScore || 0), 0) / documents.length),
+    totalMonthlyRent: documents.find(doc => doc.metrics?.rentAmount && doc.metrics.rentAmount !== 'N/A')?.metrics?.rentAmount || 'N/A',
   } : {
     totalDocuments: 0,
     totalClauses: 0,
@@ -134,36 +134,50 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
   }
 
   const handleFileUpload = async (file: File) => {
+    console.log('Starting file upload:', file.name, file.type, file.size)
     setIsLoading(true)
     setUploadedFile(file)
 
     try {
       const formData = new FormData()
       formData.append('file', file)
+      console.log('FormData created, making request to backend...')
 
-      const response = await fetch('/api/document', {
+      const response = await fetch('http://localhost:8000/upload-document', {
         method: 'POST',
         body: formData,
       })
+      
+      console.log('Response received:', response.status, response.statusText)
 
       if (!response.ok) {
+        console.error('Upload failed with status:', response.status)
         const error = await response.json()
-        throw new Error(error.error || 'Failed to process document')
+        console.error('Error details:', error)
+        throw new Error(error.detail || error.error || 'Failed to process document')
       }
 
       const data = await response.json()
+      console.log('Upload successful! Response data:', data)
       
       // Add new document to the list
       const newDocument: Document = {
-        fileName: data.fileName,
-        numPages: data.numPages,
-        metrics: data.metrics,
-        aiSummary: data.aiSummary,
+        fileName: data.filename || file.name,
+        numPages: data.text_length ? Math.ceil(data.text_length / 3000) : 1, // Estimate pages from text length
+        metrics: data.metrics || {
+          totalClauses: data.clauses_count || 0,
+          expiringSoon: false,
+          complianceScore: 85,
+          rentAmount: 'N/A'
+        },
+        aiSummary: data.message || 'Document processed successfully',
       }
 
+      console.log('Adding new document:', newDocument)
       setDocuments(prev => [...prev, newDocument])
     } catch (error) {
       console.error('Error uploading document:', error)
+      console.error('Error details:', error)
       alert(error instanceof Error ? error.message : 'Failed to upload document')
     } finally {
       setIsLoading(false)
@@ -398,10 +412,10 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
                       <p className="text-sm text-[#B7C4B8]">{doc.numPages} pages</p>
                     </div>
                   </div>
-                  <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${getComplianceBgColor(doc.metrics.complianceScore)}`}>
-                    <Shield size={16} className={getComplianceColor(doc.metrics.complianceScore)} />
-                    <span className={`text-sm font-semibold ${getComplianceColor(doc.metrics.complianceScore)}`}>
-                      {doc.metrics.complianceScore}%
+                  <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${getComplianceBgColor(doc.metrics?.complianceScore || 0)}`}>
+                    <Shield size={16} className={getComplianceColor(doc.metrics?.complianceScore || 0)} />
+                    <span className={`text-sm font-semibold ${getComplianceColor(doc.metrics?.complianceScore || 0)}`}>
+                      {doc.metrics?.complianceScore || 0}%
                     </span>
                   </div>
                 </div>
@@ -410,16 +424,16 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                   <div className="p-4 bg-[#111513]/40 rounded-lg border border-[#1E3028]">
                     <div className="text-xs font-medium text-[#B7C4B8] mb-1">Clauses</div>
-                    <div className="text-xl font-bold text-white">{doc.metrics.totalClauses}</div>
+                    <div className="text-xl font-bold text-white">{doc.metrics?.totalClauses || 0}</div>
                   </div>
                   <div className="p-4 bg-[#111513]/40 rounded-lg border border-[#1E3028]">
                     <div className="text-xs font-medium text-[#B7C4B8] mb-1">Monthly Rent</div>
-                    <div className="text-xl font-bold text-[#00A86B]">{doc.metrics.rentAmount}</div>
+                    <div className="text-xl font-bold text-[#00A86B]">{doc.metrics?.rentAmount || 'N/A'}</div>
                   </div>
                   <div className="p-4 bg-[#111513]/40 rounded-lg border border-[#1E3028]">
                     <div className="text-xs font-medium text-[#B7C4B8] mb-1">Status</div>
                     <div className="text-xl font-bold text-white">
-                      {doc.metrics.expiringSoon ? (
+                      {doc.metrics?.expiringSoon ? (
                         <span className="text-[#88C999]">Expiring Soon</span>
                       ) : (
                         <span className="text-[#00A86B]">Active</span>
@@ -428,8 +442,8 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
                   </div>
                   <div className="p-4 bg-[#111513]/40 rounded-lg border border-[#1E3028]">
                     <div className="text-xs font-medium text-[#B7C4B8] mb-1">Compliance</div>
-                    <div className={`text-xl font-bold ${getComplianceColor(doc.metrics.complianceScore)}`}>
-                      {doc.metrics.complianceScore}%
+                    <div className={`text-xl font-bold ${getComplianceColor(doc.metrics?.complianceScore || 0)}`}>
+                      {doc.metrics?.complianceScore || 0}%
                     </div>
                   </div>
                 </div>

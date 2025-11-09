@@ -1,0 +1,77 @@
+{
+  "document_id": "290564eb-2afe-4f20-8837-471af5f2f8a0",
+  "processing_timestamp": "2025-11-09T09:07:58.908638",
+  "extracted_text": "TEXT:\nCBRE\nChallenge Statement \u2013 HackUTD 2025\nOverview\nCBRE is the world's largest commercial real estate and investment firm, managing data for\nmillions of properties, assets, and transactions globally. Every day, property managers,\ninvestors, and clients rely on timely insights to make critical decisions, from buying and\nselling properties to forecasting maintenance costs and sustainability outcomes.\n\nHowever, much of that information lives inside unstructured data like PDFs, reports, and\ncontracts. Finding the right information quickly can make or break a deal, a project, or a\nsustainability target.\n\nChallenge Statement\nHow might we build an Al-powered assistant that transforms how people access and\ntrust information in real estate?\n\nYour task is to create a smart Al system that helps CBRE professionals automatically find,\nsummarize, or predict key insights from large volumes of property, market, or operational\ndata, making decision-making faster, easier, and more reliable.\n\nYou can approach the challenge in any of these ways or combine your own ideas:\n\n\u2022 Document Intelligence: Build a system that scans reports, contracts, or\nsustainability plans and automatically extracts useful metrics or clauses.\n\u2022 Smart Search: Create a chatbot or interactive interface where users can query\nquestions like \u201cWhich properties in Dallas are showing high energy costs?\" or\n\"Which leases expire next quarter?\"\n\u2022 Predictive Analytics: Train a model that identifies hidden trends, such as\npredicting which assets may face value drops based on operational inefficiency or\nmarket indicators.\n\u2022 Insight Summarizer: Build a dashboard that consolidates insights from different\ndatasets and generates readable summaries for decision-makers.\n\nExpectations\n\u2022 Focus on real-world usefulness. Imagine your tool being used by a CBRE analyst or\nmanager on a busy workday.\n\u2022 Use AI, ML, NLP, or LLM-based methods to make data more searchable, insightful,\nor predictive.\n\u2022 Keep outputs explainable so users understand why an insight or prediction is made.\n\u2022 If real data is not available, simulated or public datasets are completely fine for\ndemonstration.\n\nInspiration\nCBRE's mission is to turn complex real estate data into meaningful intelligence for our\nclients and teams. With millions of records across sustainability metrics, financial data,\nand property performance, the challenge is not collecting data but making it truly useful.\n\nWe invite you to reimagine how Al can bridge the gap between raw information and\nconfident action. Your idea could influence how the world's leading real estate firm and its\nclients make smarter, faster, and more sustainable decisions.\n\nQuestions?\nConnect with CBRE engineers at our booth or reach out to us on Discord for any\nclarifications or support!\n\nMETRICS:\n{\n  \"totalClauses\": 13,\n  \"rentAmount\": null,\n  \"expiringSoon\": null,\n  \"complianceScore\": null,\n  \"expirationDate\": null,\n  \"financialMetrics\": {\n    \"forecastedMaintenanceCosts\": null,\n    \"assetValueDrops\": null\n  },\n  \"otherMetrics\": {\n    \"propertiesManaged\": \"millions\",\n    \"assetsManaged\": \"millions\",\n    \"transactionsManaged\": \"globally\",\n    \"hackathonYear\": 2025\n  }\n}\n\nCLAUSES:\n- **Challenge Statement**: Defines the core problem: building an AI-powered assistant to transform real estate information access and trust.\n- **Task Definition**: Specifies the goal of creating a smart AI system to automatically find, summarize, or predict key insights from various real estate data.\n- **Document Intelligence Approach**: Suggests building a system to scan reports, contracts, or sustainability plans to automatically extract useful metrics or clauses.\n- **Smart Search Approach**: Proposes creating a chatbot or interactive interface for querying property-specific information, such as energy costs or lease expiration dates.\n- **Predictive Analytics Approach**: Recommends training a model to identify hidden trends and predict asset value drops based on operational inefficiency or market indicators.\n- **Insight Summarizer Approach**: Encourages building a dashboard to consolidate insights from different datasets into readable summaries for decision-makers.\n- **Real-world Usefulness Expectation**: Emphasizes the tool's practical utility for a CBRE analyst or manager during their workday.\n- **Methodology Expectation**: Requires the use of AI, ML, NLP, or LLM-based methods to enhance data searchability, insight generation, or predictive capabilities.\n- **Explainability Expectation**: Mandates that outputs be explainable, allowing users to understand the reasoning behind insights or predictions.\n- **Data Availability Expectation**: States that simulated or public datasets are acceptable for demonstration if real data is unavailable.\n- **CBRE Mission (Inspiration)**: Highlights CBRE's goal of converting complex real estate data into meaningful intelligence for clients and teams.\n- **Impact of Solution (Inspiration)**: Mentions that successful ideas could influence CBRE and its clients to make smarter, faster, and more sustainable decisions.\n- **Support Contact (Questions?)**: Provides information on how to connect with CBRE engineers for assistance or clarifications.",
+  "metrics": {
+    "totalClauses": 13,
+    "rentAmount": null,
+    "expiringSoon": null,
+    "complianceScore": null,
+    "expirationDate": null,
+    "financialMetrics": {
+      "forecastedMaintenanceCosts": null,
+      "assetValueDrops": null
+    },
+    "otherMetrics": {
+      "propertiesManaged": "millions",
+      "assetsManaged": "millions",
+      "transactionsManaged": "globally",
+      "hackathonYear": 2025
+    }
+  },
+  "clauses": [
+    {
+      "title": "**Challenge Statement**",
+      "summary": "Defines the core problem: building an AI-powered assistant to transform real estate information access and trust."
+    },
+    {
+      "title": "**Task Definition**",
+      "summary": "Specifies the goal of creating a smart AI system to automatically find, summarize, or predict key insights from various real estate data."
+    },
+    {
+      "title": "**Document Intelligence Approach**",
+      "summary": "Suggests building a system to scan reports, contracts, or sustainability plans to automatically extract useful metrics or clauses."
+    },
+    {
+      "title": "**Smart Search Approach**",
+      "summary": "Proposes creating a chatbot or interactive interface for querying property-specific information, such as energy costs or lease expiration dates."
+    },
+    {
+      "title": "**Predictive Analytics Approach**",
+      "summary": "Recommends training a model to identify hidden trends and predict asset value drops based on operational inefficiency or market indicators."
+    },
+    {
+      "title": "**Insight Summarizer Approach**",
+      "summary": "Encourages building a dashboard to consolidate insights from different datasets into readable summaries for decision-makers."
+    },
+    {
+      "title": "**Real-world Usefulness Expectation**",
+      "summary": "Emphasizes the tool's practical utility for a CBRE analyst or manager during their workday."
+    },
+    {
+      "title": "**Methodology Expectation**",
+      "summary": "Requires the use of AI, ML, NLP, or LLM-based methods to enhance data searchability, insight generation, or predictive capabilities."
+    },
+    {
+      "title": "**Explainability Expectation**",
+      "summary": "Mandates that outputs be explainable, allowing users to understand the reasoning behind insights or predictions."
+    },
+    {
+      "title": "**Data Availability Expectation**",
+      "summary": "States that simulated or public datasets are acceptable for demonstration if real data is unavailable."
+    },
+    {
+      "title": "**CBRE Mission (Inspiration)**",
+      "summary": "Highlights CBRE's goal of converting complex real estate data into meaningful intelligence for clients and teams."
+    },
+    {
+      "title": "**Impact of Solution (Inspiration)**",
+      "summary": "Mentions that successful ideas could influence CBRE and its clients to make smarter, faster, and more sustainable decisions."
+    },
+    {
+      "title": "**Support Contact (Questions?)**",
+      "summary": "Provides information on how to connect with CBRE engineers for assistance or clarifications."
+    }
+  ],
+  "document_type": "auto-detected"
+}

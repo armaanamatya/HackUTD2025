@@ -13,7 +13,7 @@ class PropertyInsightsCrew:
         report_agent = self.agents.create_report_generation_agent()
         
         # Assign tools to agents
-        insights_agent.tools = self.tools.get_web_tools() + self.tools.get_file_tools()
+        insights_agent.tools = self.tools.get_web_tools() + self.tools.get_file_tools() + self.tools.get_mongodb_tools()
         report_agent.tools = self.tools.get_file_tools()
         
         # Define tasks
@@ -31,6 +31,8 @@ class PropertyInsightsCrew:
             - Market risks and opportunities
 
             Tool usage guidelines:
+            - FIRST, use search_market_listings tool to query our MongoDB database for relevant property listings
+            - Use get_market_listings_stats for market statistics and trends
             - Use web search tools to find current market data and property information
             - Research Zillow, Realtor.com, and other real estate platforms
             - Look for recent sales, property tax records, and market reports
