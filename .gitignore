@@ -66,6 +66,9 @@ crew_memory/
 crewai-llama-system/crew_memory/
 crewai-llama-system/.crewai/
 
+# Claude Code
+.claude/
+
 # Temporary files
 *.tmp
 *.temp
@@ -74,3 +77,9 @@ crewai-llama-system/.crewai/
 *.pyc
 *.pyo
 *.pyd
+
+# Python cache directories (specific paths)
+crewai-llama-system/src/crews/__pycache__/
+crewai-llama-system/src/tools/__pycache__/
+crewai-llama-system/src/agents/__pycache__/
+crewai-llama-system/config/__pycache__/
