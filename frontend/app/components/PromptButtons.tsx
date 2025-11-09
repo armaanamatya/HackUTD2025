@@ -1,79 +1,212 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { RefreshCw, BarChart3, Home, FileText, Search } from 'lucide-react'
-import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { RefreshCw, MessageCircle } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 interface PromptButtonsProps {
-  onPromptSelect: (prompt: string) => void
+  onPromptSelect: (prompt: string, category: 'insights' | 'trends' | 'contracts' | 'documents') => void
   onRefresh?: () => void
 }
 
-const defaultPrompts = [
-  {
-    text: 'Get property insights',
-    query: 'show me properties in Jakarta with market analysis',
-    icon: Home,
-  },
-  {
-    text: 'Predict market trends',
-    query: 'predict next quarter performance and market trends',
-    icon: BarChart3,
-  },
-  {
-    text: 'Analyze contracts',
-    query: 'analyze real estate contracts and extract key terms',
-    icon: FileText,
-  },
-  {
-    text: 'Summarize documents',
-    query: 'summarize key points from uploaded documents',
-    icon: Search,
-  },
-]
+// Prompt categories with multiple AI-style questions
+const promptCategories = {
+  insights: [
+    "What's the rental yield for Dream House Reality?",
+    "Show me top-performing listings in Dallas.",
+    "Is this property a good long-term investment?",
+    "Which Dallas properties are expected to appreciate most in 2025?",
+    "What's the ROI for properties under $500k in Austin?",
+    "Analyze the market value trends for commercial properties in Houston.",
+    "Show me properties with the highest sustainability scores.",
+    "Which listings have the best walkability and safety ratings?",
+    "Compare investment potential across different property types.",
+    "What are the maintenance costs for properties in this portfolio?",
+  ],
+  trends: [
+    "Predict the 2025 market trend in Austin.",
+    "How have office lease prices changed this year?",
+    "Which cities are showing growth in commercial properties?",
+    "Predict how lease rates will shift next quarter.",
+    "What's the forecast for commercial real estate in Dallas?",
+    "Analyze price growth trends over the last 5 years.",
+    "Which markets are showing the strongest appreciation?",
+    "Predict rental yield trends for the next 12 months.",
+    "How will interest rates affect property values?",
+    "Show me market trends for sustainable properties.",
+  ],
+  contracts: [
+    "Analyze the compliance of this lease document.",
+    "Summarize clauses from the uploaded sustainability plan.",
+    "Which contracts are expiring soon?",
+    "Extract key terms from this rental agreement.",
+    "Identify all rent escalation clauses in these contracts.",
+    "Check compliance scores for all lease documents.",
+    "Which contracts have expiring terms in the next 6 months?",
+    "Analyze risk factors in the uploaded contract.",
+    "Summarize financial obligations from these agreements.",
+    "Extract all renewal options from lease documents.",
+  ],
+  documents: [
+    "Summarize this report into key takeaways.",
+    "Extract all financial metrics from the Q2 PDF.",
+    "Show all clauses related to rent escalation.",
+    "Summarize this contract and highlight expiring clauses.",
+    "Extract property details from the uploaded document.",
+    "What are the key compliance issues in this document?",
+    "Summarize the financial terms from this agreement.",
+    "Extract all dates and deadlines from this document.",
+    "What are the main obligations outlined in this contract?",
+    "Summarize sustainability requirements from this plan.",
+  ],
+}
+
+// Get a random prompt from each category
+function getRandomPrompts(): Array<{ text: string; category: keyof typeof promptCategories }> {
+  return [
+    {
+      text: promptCategories.insights[Math.floor(Math.random() * promptCategories.insights.length)],
+      category: 'insights',
+    },
+    {
+      text: promptCategories.trends[Math.floor(Math.random() * promptCategories.trends.length)],
+      category: 'trends',
+    },
+    {
+      text: promptCategories.contracts[Math.floor(Math.random() * promptCategories.contracts.length)],
+      category: 'contracts',
+    },
+    {
+      text: promptCategories.documents[Math.floor(Math.random() * promptCategories.documents.length)],
+      category: 'documents',
+    },
+  ]
+}
 
 export default function PromptButtons({ onPromptSelect, onRefresh }: PromptButtonsProps) {
-  const [prompts, setPrompts] = useState(defaultPrompts)
+  const [prompts, setPrompts] = useState<Array<{ text: string; category: keyof typeof promptCategories }>>([])
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Generate prompts only on client side after mount to avoid hydration mismatch
+  useEffect(() => {
+    setIsMounted(true)
+    setPrompts(getRandomPrompts())
+  }, [])
 
   const handleRefresh = () => {
+    if (isRefreshing) return
+    
     if (onRefresh) {
       onRefresh()
     }
     setIsRefreshing(true)
-    // Shuffle prompts for variety (optional)
+    
+    // Animate fade out, then shuffle and fade in
     setTimeout(() => {
-      setPrompts([...prompts].sort(() => Math.random() - 0.5))
-      setIsRefreshing(false)
-    }, 500)
+      const newPrompts = getRandomPrompts()
+      setPrompts(newPrompts)
+      setRefreshKey(prev => prev + 1)
+      setTimeout(() => {
+        setIsRefreshing(false)
+      }, 300)
+    }, 300)
+  }
+
+  const handlePromptClick = (prompt: { text: string; category: keyof typeof promptCategories }) => {
+    if (isRefreshing) return
+    onPromptSelect(prompt.text, prompt.category)
+  }
+
+  // Calculate font size based on text length
+  const getFontSize = (text: string) => {
+    const wordCount = text.split(' ').length
+    const charCount = text.length
+    
+    // For very long questions (60+ chars or 12+ words), use smaller font
+    if (charCount > 60 || wordCount > 12) {
+      return 'text-xs'
+    }
+    // For medium questions (45-60 chars or 9-12 words), use small font
+    if (charCount > 45 || wordCount > 9) {
+      return 'text-sm'
+    }
+    // For shorter questions, use base font
+    return 'text-sm md:text-base'
+  }
+
+  // Show loading state or empty state until mounted to avoid hydration mismatch
+  if (!isMounted || prompts.length === 0) {
+    return (
+      <div className="flex flex-col items-center gap-3 mb-8 w-full px-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl w-full h-[140px]">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="px-5 py-4 rounded-xl border border-[#1E3028]/40 bg-[#111513]/60 backdrop-blur-sm h-full opacity-50 animate-pulse"
+            >
+              <div className="flex items-start gap-3 h-full">
+                <div className="w-4 h-4 mt-0.5 rounded-full bg-[#1E3028] flex-shrink-0" />
+                <div className="h-4 bg-[#1E3028] rounded w-3/4" />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="h-5" /> {/* Placeholder for refresh button */}
+      </div>
+    )
   }
 
   return (
-    <div className="flex flex-col items-center gap-4 mb-8 w-full px-4">
-      {/* Prompt Buttons */}
-      <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 max-w-3xl w-full">
-        {prompts.map((prompt, index) => {
-          const Icon = prompt.icon
-          return (
-            <motion.button
-              key={`${prompt.text}-${index}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 + index * 0.1, duration: 0.5 }}
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => onPromptSelect(prompt.query)}
-              className="flex items-center gap-2 bg-[#111513]/60 border border-[#1E3028] text-[#C9E3D5] hover:bg-[#00A86B]/10 hover:border-[#00A86B]/40 hover:text-white transition-all duration-300 rounded-md px-5 py-2.5 shadow-[0_0_10px_rgba(0,168,107,0.15)] text-xs md:text-sm font-medium"
-              style={{ fontWeight: 500 }}
-            >
-              <Icon className="w-4 h-4" />
-              {prompt.text}
-            </motion.button>
-          )
-        })}
+    <div className="flex flex-col items-center gap-3 mb-8 w-full px-4">
+      {/* Prompt Questions - Fixed height container with grid layout */}
+      <div className="w-full max-w-4xl h-[140px]">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={refreshKey}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-full"
+          >
+            {prompts.map((prompt, index) => {
+              const fontSize = getFontSize(prompt.text)
+              return (
+                <motion.button
+                  key={`${prompt.category}-${index}-${prompt.text.slice(0, 30)}`}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ 
+                    delay: index * 0.1, 
+                    duration: 0.4,
+                    type: "spring",
+                    stiffness: 100
+                  }}
+                  whileHover={{ 
+                    scale: 1.02,
+                  }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handlePromptClick(prompt)}
+                  disabled={isRefreshing}
+                  className="group relative px-5 py-4 rounded-xl border border-[#1E3028]/40 bg-[#111513]/60 backdrop-blur-sm text-[#C9E3D5] hover:text-[#00A86B] hover:border-[#00A86B]/50 hover:bg-[#00A86B]/10 transition-all duration-300 text-left h-full flex items-start shadow-[0_0_10px_rgba(0,168,107,0.15)] hover:shadow-[0_0_20px_rgba(0,168,107,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ fontWeight: 400 }}
+                >
+                  <div className="flex items-start gap-3 w-full h-full">
+                    <MessageCircle className="w-4 h-4 mt-0.5 text-[#00A86B]/60 group-hover:text-[#00A86B] transition-colors flex-shrink-0" />
+                    <span className={`${fontSize} leading-relaxed flex-1 line-clamp-2`}>{prompt.text}</span>
+                  </div>
+                  {/* Subtle glow effect on hover */}
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#00A86B]/0 via-[#00A86B]/5 to-[#00A86B]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                </motion.button>
+              )
+            })}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      {/* Refresh Button */}
+      {/* Refresh Button - Right below questions */}
       <motion.button
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -81,17 +214,17 @@ export default function PromptButtons({ onPromptSelect, onRefresh }: PromptButto
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={handleRefresh}
-        className="flex items-center gap-2 text-[#B7C4B8] hover:text-white/80 text-xs font-medium transition-colors"
+        disabled={isRefreshing}
+        className="flex items-center gap-2 text-[#B7C4B8] hover:text-[#00A86B] text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <motion.div
           animate={{ rotate: isRefreshing ? 360 : 0 }}
-          transition={{ duration: 0.5, ease: 'easeInOut' }}
+          transition={{ duration: 0.6, ease: 'easeInOut', repeat: isRefreshing ? Infinity : 0 }}
         >
           <RefreshCw size={14} />
         </motion.div>
-        <span>Refresh prompts</span>
+        <span>{isRefreshing ? 'Refreshing...' : 'Refresh prompts'}</span>
       </motion.button>
     </div>
   )
 }
-
