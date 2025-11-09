@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, Sparkles, Search } from 'lucide-react'
+import { Zap, Sparkles, Search, Upload, FileText, X } from 'lucide-react'
 import ChatPanel from './components/ChatPanel'
 import PropertyDiscovery from './components/PropertyDiscovery'
 import PredictiveAnalytics from './components/PredictiveAnalytics'
@@ -63,6 +63,64 @@ export default function Home() {
     await handleSearch(message)
   }
 
+  const handleDocumentUpload = async (file: File) => {
+    setIsProcessing(true)
+    
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/document', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const responseData = await response.json()
+
+      if (!response.ok) {
+        // Show detailed error message
+        const errorMsg = responseData.error || 'Failed to process document'
+        throw new Error(errorMsg)
+      }
+
+      // Map to document view mode with new response structure
+      setViewMode('document')
+      // The response now has: fileName, numPages, metrics, aiSummary
+      // DocumentInsights component will handle both old and new formats
+      setResponseData({
+        type: 'document_intelligence',
+        data: {
+          documents: responseData.success ? [{
+            fileName: responseData.fileName,
+            numPages: responseData.numPages,
+            metrics: responseData.metrics,
+            aiSummary: responseData.aiSummary,
+          }] : [],
+          summary: responseData.success ? {
+            totalDocuments: 1,
+            totalClauses: responseData.metrics.totalClauses,
+            expiringSoon: responseData.metrics.expiringSoon ? 1 : 0,
+            averageCompliance: responseData.metrics.complianceScore,
+            totalMonthlyRent: responseData.metrics.rentAmount,
+          } : {},
+        },
+        // Also pass direct props for new format
+        fileName: responseData.fileName,
+        numPages: responseData.numPages,
+        metrics: responseData.metrics,
+        aiSummary: responseData.aiSummary,
+      })
+    } catch (error) {
+      console.error('Error processing document:', error)
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to process document. Please try again.'
+      alert(errorMessage)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
   const renderContent = () => {
     switch (viewMode) {
       case 'property':
@@ -75,6 +133,10 @@ export default function Home() {
           <DocumentInsights 
             documents={responseData?.data?.documents || []}
             summary={responseData?.data?.summary || {}}
+            fileName={responseData?.fileName}
+            numPages={responseData?.numPages}
+            metrics={responseData?.metrics}
+            aiSummary={responseData?.aiSummary}
           />
         )
       case 'insights':
@@ -90,7 +152,7 @@ export default function Home() {
         // For chat view, just show the response content (ChatPanel is always on left)
         return <ChatResponse content={responseData?.content || ''} />
       default:
-        return <HomeView onQuickAction={handleQuickAction} />
+        return <HomeView onQuickAction={handleQuickAction} onDocumentUpload={handleDocumentUpload} isProcessing={isProcessing} />
     }
   }
 
@@ -171,7 +233,20 @@ export default function Home() {
   )
 }
 
-function HomeView({ onQuickAction }: { onQuickAction: (action: string) => void }) {
+function HomeView({ 
+  onQuickAction, 
+  onDocumentUpload,
+  isProcessing 
+}: { 
+  onQuickAction: (action: string) => void
+  onDocumentUpload: (file: File) => void
+  isProcessing: boolean
+}) {
+  const [isDragging, setIsDragging] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [localQuery, setLocalQuery] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const quickActions = [
     {
       title: 'Property Discovery',
@@ -188,13 +263,6 @@ function HomeView({ onQuickAction }: { onQuickAction: (action: string) => void }
       gradient: 'from-purple-500 to-pink-400',
     },
     {
-      title: 'Document Intelligence',
-      description: 'Extract insights from contracts and reports',
-      icon: '📄',
-      action: 'analyze lease contracts',
-      gradient: 'from-orange-500 to-red-400',
-    },
-    {
       title: 'Insight Summary',
       description: 'Comprehensive portfolio overview',
       icon: '✨',
@@ -202,6 +270,53 @@ function HomeView({ onQuickAction }: { onQuickAction: (action: string) => void }
       gradient: 'from-green-500 to-emerald-400',
     },
   ]
+
+  const handleFileSelect = (file: File) => {
+    // Validate file type
+    const validTypes = ['application/pdf', 'text/plain']
+    const validExtensions = ['pdf', 'txt']
+    const fileExtension = file.name.split('.').pop()?.toLowerCase()
+
+    if (!validTypes.includes(file.type) && !validExtensions.includes(fileExtension || '')) {
+      alert('Please upload a PDF or TXT file')
+      return
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size must be less than 10MB')
+      return
+    }
+
+    setSelectedFile(file)
+    onDocumentUpload(file)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+
+    const files = Array.from(e.dataTransfer.files)
+    if (files.length > 0) {
+      handleFileSelect(files[0])
+    }
+  }
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleFileSelect(e.target.files[0])
+    }
+  }
 
   return (
     <div className="h-full w-full flex items-center justify-center p-12 overflow-y-auto">
@@ -237,7 +352,7 @@ function HomeView({ onQuickAction }: { onQuickAction: (action: string) => void }
         </motion.div>
 
         {/* Quick Actions Grid */}
-        <div className="grid grid-cols-2 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {quickActions.map((action, index) => (
             <motion.button
               key={index}
@@ -259,29 +374,155 @@ function HomeView({ onQuickAction }: { onQuickAction: (action: string) => void }
           ))}
         </div>
 
-        {/* Search Textbox */}
+        {/* Search Textbox with Integrated Document Upload */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
           className="max-w-3xl mx-auto"
         >
-          <div className="relative">
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`relative rounded-2xl border-2 transition-all ${
+              isDragging
+                ? 'border-orange-500 bg-orange-50/30 border-solid shadow-lg'
+                : 'border-gray-200 bg-white shadow-lg hover:shadow-xl'
+            } ${isProcessing ? 'opacity-60' : ''}`}
+          >
+            {/* Hidden file input */}
             <input
-              type="text"
-              placeholder="Or type your query here..."
-              onKeyPress={(e) => {
-                if (e.key === 'Enter' && e.currentTarget.value) {
-                  onQuickAction(e.currentTarget.value)
-                }
-              }}
-              className="w-full px-6 py-5 pl-14 rounded-2xl bg-white border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all text-base shadow-lg"
+              ref={fileInputRef}
+              id="document-upload"
+              type="file"
+              accept=".pdf,.txt"
+              onChange={handleFileInputChange}
+              className="absolute opacity-0 w-0 h-0 pointer-events-none"
+              disabled={isProcessing}
+              aria-label="Upload document"
             />
-            <Search size={24} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+
+            {/* Search/Query Input Area */}
+            <div className="relative flex items-center gap-3 p-4">
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  placeholder="Type your query here or upload a document..."
+                  value={localQuery}
+                  onChange={(e) => setLocalQuery(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && e.currentTarget.value && !selectedFile && !isProcessing) {
+                      onQuickAction(e.currentTarget.value)
+                      setLocalQuery('')
+                    }
+                  }}
+                  className="w-full px-6 py-4 pl-14 pr-12 rounded-xl bg-transparent border-0 focus:outline-none text-base placeholder-gray-400"
+                  disabled={isProcessing}
+                />
+                <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                
+                {/* Selected file indicator */}
+                {selectedFile && !isProcessing && (
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 px-3 py-1.5 bg-orange-50 rounded-lg border border-orange-200">
+                    <FileText size={16} className="text-orange-500 flex-shrink-0" />
+                    <span className="text-xs text-gray-700 font-medium truncate max-w-[120px]">{selectedFile.name}</span>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setSelectedFile(null)
+                        setLocalQuery('')
+                        if (fileInputRef.current) {
+                          fileInputRef.current.value = ''
+                        }
+                      }}
+                      className="p-0.5 hover:bg-orange-100 rounded transition-colors flex-shrink-0"
+                      aria-label="Remove file"
+                    >
+                      <X size={14} className="text-gray-500" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Upload Button */}
+              <label
+                htmlFor="document-upload"
+                className={`flex-shrink-0 p-3 rounded-xl transition-all cursor-pointer ${
+                  isDragging
+                    ? 'bg-orange-500 text-white scale-110'
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900'
+                } ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}
+                title="Upload document (PDF or TXT)"
+              >
+                {isProcessing ? (
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  >
+                    <Upload size={20} className="text-orange-500" />
+                  </motion.div>
+                ) : (
+                  <Upload size={20} />
+                )}
+              </label>
+
+              {/* Search/Process Button */}
+              {localQuery.trim() && !selectedFile && !isProcessing && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  onClick={() => {
+                    onQuickAction(localQuery)
+                    setLocalQuery('')
+                  }}
+                  className="flex-shrink-0 px-6 py-3 bg-gradient-to-br from-blue-500 to-cyan-500 text-white rounded-xl hover:shadow-lg transition-all font-medium"
+                >
+                  Search
+                </motion.button>
+              )}
+            </div>
+
+            {/* Processing Overlay */}
+            {isProcessing && (
+              <div className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10">
+                <div className="text-center">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full mx-auto mb-3"
+                  />
+                  <p className="text-sm font-medium text-gray-700">Processing document...</p>
+                  <p className="text-xs text-gray-500 mt-1">Extracting text and analyzing content</p>
+                </div>
+              </div>
+            )}
+
+            {/* Drag and drop indicator */}
+            {isDragging && (
+              <div className="absolute inset-0 bg-orange-500/10 rounded-2xl flex items-center justify-center z-20 pointer-events-none">
+                <div className="text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-orange-100 flex items-center justify-center mx-auto mb-3">
+                    <Upload size={32} className="text-orange-500" />
+                  </div>
+                  <p className="text-lg font-semibold text-orange-600">Drop your document here</p>
+                  <p className="text-sm text-gray-600 mt-1">PDF or TXT files supported</p>
+                </div>
+              </div>
+            )}
           </div>
-          <p className="text-center text-sm text-gray-500 mt-4">
-            Try: "show me houses in Dallas" • "predict market trends" • "analyze contracts"
-          </p>
+
+          <div className="flex items-center justify-center gap-4 mt-4 text-sm text-gray-500">
+            <span>Try: "show me houses in Dallas"</span>
+            <span>•</span>
+            <span>"predict market trends"</span>
+            <span>•</span>
+            <span className="flex items-center gap-1">
+              <Upload size={14} />
+              <span>Upload a document</span>
+            </span>
+          </div>
         </motion.div>
       </div>
     </div>
