@@ -21,12 +21,12 @@ export default function InsightSummaryDashboard({ kpis, topInsights, recommendat
     >
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-neon-cyan/20 to-neon-blue/20 border border-neon-cyan/30 flex items-center justify-center">
-          <Lightbulb size={24} className="text-neon-cyan" />
+        <div className="w-12 h-12 rounded-full bg-gradient-to-b from-green-400 via-green-500 to-green-200 flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.3)]">
+          <Lightbulb size={24} className="text-white" />
         </div>
         <div>
-          <h2 className="text-3xl font-bold text-white">Insight Summary Dashboard</h2>
-          <p className="text-sm text-gray-400 font-mono">Consolidated view across all data sources</p>
+          <h2 className="text-3xl font-bold text-white font-cbre">Insight Summary Dashboard</h2>
+          <p className="text-sm text-[#B7C4B8] font-cbre">Consolidated view across all data sources</p>
         </div>
       </div>
 
@@ -39,11 +39,11 @@ export default function InsightSummaryDashboard({ kpis, topInsights, recommendat
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ delay: index * 0.1, duration: 0.3 }}
             whileHover={{ y: -4, scale: 1.02 }}
-            className="glass rounded-2xl p-5 border border-gray-800 hover:border-neon-cyan/50 transition-all"
+            className="bg-[#111513]/60 backdrop-blur-xl rounded-2xl p-5 border border-[#1E3028] hover:border-[#00A86B]/50 transition-all"
           >
-            <div className="text-xs text-gray-400 mb-2 font-mono uppercase">{kpi.label}</div>
-            <div className="text-3xl font-bold text-white mb-1">{kpi.value}</div>
-            <div className="text-sm text-emerald-400 font-semibold">{kpi.change}</div>
+            <div className="text-xs text-[#B7C4B8] mb-2 font-cbre uppercase">{kpi.label}</div>
+            <div className="text-3xl font-bold text-white mb-1 font-cbre">{kpi.value}</div>
+            <div className="text-sm text-[#00A86B] font-semibold font-cbre">{kpi.change}</div>
           </motion.div>
         ))}
       </div>
@@ -54,43 +54,43 @@ export default function InsightSummaryDashboard({ kpis, topInsights, recommendat
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="glass rounded-2xl p-6 border border-gray-800"
+          className="bg-[#111513]/60 backdrop-blur-xl rounded-2xl p-6 border border-[#1E3028]"
         >
           <div className="flex items-center gap-3 mb-6">
-            <BarChart3 size={20} className="text-neon-cyan" />
-            <h3 className="text-lg font-semibold text-white">Trend Overview</h3>
+            <BarChart3 size={20} className="text-[#00A86B]" />
+            <h3 className="text-lg font-semibold text-white font-cbre">Trend Overview</h3>
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="colorSummary" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="#22d3ee" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#00A86B" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#00A86B" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis dataKey="name" stroke="#64748b" />
-                <YAxis stroke="#64748b" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(30, 48, 40, 0.5)" />
+                <XAxis dataKey="name" stroke="#B7C4B8" />
+                <YAxis stroke="#B7C4B8" />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #334155',
+                    backgroundColor: '#111513',
+                    border: '1px solid #1E3028',
                     borderRadius: '12px',
-                    color: '#e2e8f0',
+                    color: '#C9E3D5',
                   }}
                 />
                 <Area 
                   type="monotone" 
                   dataKey="value" 
-                  stroke="#22d3ee" 
+                  stroke="#00A86B" 
                   fill="url(#colorSummary)" 
                   strokeWidth={3}
                 />
                 <Area 
                   type="monotone" 
                   dataKey="forecast" 
-                  stroke="#3b82f6" 
+                  stroke="#88C999" 
                   strokeDasharray="8 4"
                   fill="none"
                   strokeWidth={3}
@@ -106,11 +106,11 @@ export default function InsightSummaryDashboard({ kpis, topInsights, recommendat
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
-        className="glass rounded-2xl p-6 border border-gray-800"
+        className="bg-[#111513]/60 backdrop-blur-xl rounded-2xl p-6 border border-[#1E3028]"
       >
         <div className="flex items-center gap-3 mb-4">
-          <TrendingUp size={20} className="text-neon-cyan" />
-          <h3 className="text-lg font-semibold text-white">Top Insights</h3>
+          <TrendingUp size={20} className="text-[#00A86B]" />
+          <h3 className="text-lg font-semibold text-white font-cbre">Top Insights</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {topInsights.map((insight, index) => (
@@ -119,13 +119,13 @@ export default function InsightSummaryDashboard({ kpis, topInsights, recommendat
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.7 + index * 0.1 }}
-              className="p-4 glass-light rounded-lg border border-gray-800 hover:border-neon-cyan/30 transition-colors"
+              className="p-4 bg-[#111513]/40 rounded-lg border border-[#1E3028] hover:border-[#00A86B]/40 transition-colors"
             >
               <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-neon-cyan/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-xs font-bold text-neon-cyan">{index + 1}</span>
+                <div className="w-6 h-6 rounded-full bg-[#00A86B]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs font-bold text-[#00A86B]">{index + 1}</span>
                 </div>
-                <p className="text-sm text-gray-300">{insight}</p>
+                <p className="text-sm text-[#C9E3D5]">{insight}</p>
               </div>
             </motion.div>
           ))}
@@ -137,11 +137,11 @@ export default function InsightSummaryDashboard({ kpis, topInsights, recommendat
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.9 }}
-        className="glass rounded-2xl p-6 border border-neon-cyan/30 neon-glow"
+        className="bg-[#111513]/60 backdrop-blur-xl rounded-2xl p-6 border border-[#00A86B]/40 shadow-[0_0_15px_rgba(0,168,107,0.2)]"
       >
         <div className="flex items-center gap-3 mb-4">
-          <Target size={20} className="text-neon-cyan" />
-          <h3 className="text-lg font-semibold text-white">Recommendations</h3>
+          <Target size={20} className="text-[#00A86B]" />
+          <h3 className="text-lg font-semibold text-white font-cbre">Recommendations</h3>
         </div>
         <div className="space-y-3">
           {recommendations.map((rec, index) => (
@@ -150,12 +150,12 @@ export default function InsightSummaryDashboard({ kpis, topInsights, recommendat
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.0 + index * 0.1 }}
-              className="flex items-start gap-3 p-4 glass-light rounded-lg border border-neon-cyan/20"
+              className="flex items-start gap-3 p-4 bg-[#111513]/40 rounded-lg border border-[#00A86B]/20"
             >
-              <div className="w-7 h-7 rounded-full bg-neon-cyan/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-sm font-bold text-neon-cyan">{index + 1}</span>
+              <div className="w-7 h-7 rounded-full bg-[#00A86B]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-sm font-bold text-[#00A86B]">{index + 1}</span>
               </div>
-              <p className="text-sm text-gray-300">{rec}</p>
+              <p className="text-sm text-[#C9E3D5]">{rec}</p>
             </motion.div>
           ))}
         </div>

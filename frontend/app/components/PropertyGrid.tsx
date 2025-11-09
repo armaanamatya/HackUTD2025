@@ -173,10 +173,10 @@ export default function PropertyGrid({ properties, filters }: PropertyGridProps)
   return (
     <div className="flex-1 flex gap-6 overflow-hidden">
       {/* Center: Property Grid (3x2) */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Property Discovery</h2>
-          <p className="text-sm text-gray-500 mt-1">Found {displayProperties.length} properties matching your criteria</p>
+          <h2 className="text-2xl font-bold text-white font-cbre">Property Discovery</h2>
+          <p className="text-sm text-[#B7C4B8] mt-1">Found {displayProperties.length} properties matching your criteria</p>
         </div>
         
         <div className="grid grid-cols-2 grid-rows-3 gap-6">
@@ -188,8 +188,8 @@ export default function PropertyGrid({ properties, filters }: PropertyGridProps)
               transition={{ duration: 0.3, delay: index * 0.05 }}
               whileHover={{ y: -4, scale: 1.03 }}
               onClick={() => setSelectedProperty(property)}
-              className={`relative bg-white rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.05)] border-2 cursor-pointer transition-all duration-200 ${
-                selectedProperty?.id === property.id ? 'border-blue-600 ring-2 ring-blue-200' : 'border-transparent hover:border-blue-300'
+              className={`relative bg-[#111513]/60 backdrop-blur-xl rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.3)] border-2 cursor-pointer transition-all duration-200 ${
+                selectedProperty?.id === property.id ? 'border-[#00A86B] ring-2 ring-[#00A86B]/30' : 'border-[#1E3028] hover:border-[#00A86B]/50'
               }`}
             >
               {/* Image */}
@@ -200,14 +200,14 @@ export default function PropertyGrid({ properties, filters }: PropertyGridProps)
                   className="w-full h-full object-cover"
                 />
                 {/* Badge */}
-                <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm text-gray-800 text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm">
+                <div className="absolute top-3 left-3 bg-[#111513]/95 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-sm border border-[#1E3028]">
                   {property.type}
                 </div>
                 {/* Bookmark */}
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  className="absolute top-3 right-3 p-2 bg-white/95 backdrop-blur-sm rounded-full shadow-sm text-gray-600 hover:text-blue-600 transition-colors"
+                  className="absolute top-3 right-3 p-2 bg-[#111513]/95 backdrop-blur-sm rounded-full shadow-sm text-[#B7C4B8] hover:text-[#00A86B] transition-colors border border-[#1E3028]"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Bookmark size={16} />
@@ -216,31 +216,31 @@ export default function PropertyGrid({ properties, filters }: PropertyGridProps)
 
               {/* Content */}
               <div className="p-4">
-                <h3 className="text-base font-semibold text-gray-900 mb-1 truncate">{property.title}</h3>
-                <p className="text-xs text-gray-500 flex items-center gap-1 mb-3">
+                <h3 className="text-base font-semibold text-white mb-1 truncate font-cbre">{property.title}</h3>
+                <p className="text-xs text-[#B7C4B8] flex items-center gap-1 mb-3">
                   <MapPin size={12} /> {property.address}
                 </p>
 
                 {/* Price & Rating */}
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-lg font-bold text-gray-900">{property.price}</span>
+                  <span className="text-lg font-bold text-white font-cbre">{property.price}</span>
                   <div className="flex items-center gap-1">
-                    <Star size={14} className="text-yellow-400 fill-yellow-400" />
-                    <span className="text-sm text-gray-700 font-medium">{property.rating}</span>
+                    <Star size={14} className="text-[#88C999] fill-[#88C999]" />
+                    <span className="text-sm text-[#B7C4B8] font-medium">{property.rating}</span>
                   </div>
                 </div>
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2 mb-3">
                   {property.tags.slice(0, 2).map((tag, i) => (
-                    <span key={i} className="text-xs text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full">
+                    <span key={i} className="text-xs text-[#C9E3D5] bg-[#111513]/40 border border-[#1E3028] px-2.5 py-1 rounded-full">
                       {tag}
                     </span>
                   ))}
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-3 gap-2 text-gray-600 text-xs">
+                <div className="grid grid-cols-3 gap-2 text-[#B7C4B8] text-xs">
                   <div className="flex items-center gap-1">
                     <Bed size={14} /> {property.beds}
                   </div>

@@ -90,10 +90,10 @@ function LoadingShimmer() {
     <div className="animate-pulse space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="bg-gray-200 rounded-xl h-24" />
+          <div key={i} className="bg-[#111513]/40 rounded-xl h-24 border border-[#1E3028]" />
         ))}
       </div>
-      <div className="bg-gray-200 rounded-xl h-32" />
+      <div className="bg-[#111513]/40 rounded-xl h-32 border border-[#1E3028]" />
     </div>
   )
 }
@@ -178,21 +178,21 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
   }
 
   const getComplianceColor = (score: number) => {
-    if (score >= 80) return 'text-green-600'
-    if (score >= 50) return 'text-yellow-600'
-    return 'text-red-600'
+    if (score >= 80) return 'text-[#00A86B]'
+    if (score >= 50) return 'text-[#88C999]'
+    return 'text-red-400'
   }
 
   const getComplianceBgColor = (score: number) => {
-    if (score >= 80) return 'bg-green-50 border-green-200'
-    if (score >= 50) return 'bg-yellow-50 border-yellow-200'
-    return 'bg-red-50 border-red-200'
+    if (score >= 80) return 'bg-[#00A86B]/10 border-[#00A86B]/40'
+    if (score >= 50) return 'bg-[#88C999]/10 border-[#88C999]/40'
+    return 'bg-red-500/10 border-red-500/40'
   }
 
   // Show loading state
   if (isLoading && documents.length === 0) {
     return (
-      <div className="h-full w-full p-8 bg-gray-50">
+      <div className="h-full w-full p-8">
         <div className="max-w-7xl mx-auto">
           <LoadingShimmer />
         </div>
@@ -203,23 +203,23 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
   // Show empty state
   if (documents.length === 0 && !isLoading) {
     return (
-      <div className="h-full w-full p-8 bg-gray-50 flex items-center justify-center">
+      <div className="h-full w-full p-8 flex items-center justify-center">
         <div className="max-w-2xl w-full text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center mx-auto shadow-lg">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-b from-green-400 via-green-500 to-green-200 flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(34,197,94,0.4)]">
               <FileText size={40} className="text-white" />
             </div>
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Document Intelligence</h2>
-              <p className="text-gray-600 mb-6">Upload a PDF to analyze lease agreements, contracts, or reports</p>
+              <h2 className="text-3xl font-bold text-white font-cbre mb-2">Document Intelligence</h2>
+              <p className="text-[#B7C4B8] mb-6">Upload a PDF to analyze lease agreements, contracts, or reports</p>
             </div>
-            <label className="inline-flex items-center gap-3 px-6 py-4 bg-white rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-500 cursor-pointer transition-colors shadow-sm">
-              <Upload size={24} className="text-gray-400" />
-              <span className="text-gray-700 font-medium">Upload PDF Document</span>
+            <label className="inline-flex items-center gap-3 px-6 py-4 bg-[#111513]/60 backdrop-blur-xl rounded-xl border-2 border-dashed border-[#1E3028] hover:border-[#00A86B]/50 cursor-pointer transition-colors shadow-sm">
+              <Upload size={24} className="text-[#B7C4B8]" />
+              <span className="text-[#C9E3D5] font-medium">Upload PDF Document</span>
               <input
                 type="file"
                 accept=".pdf"
@@ -238,7 +238,7 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
   const summary = latestDocument?.aiSummary || ''
 
   return (
-    <div className="h-full w-full overflow-y-auto bg-gray-50">
+    <div className="h-full w-full overflow-y-auto custom-scrollbar">
       <div className="max-w-7xl mx-auto p-8">
         {/* Header */}
         <motion.div
@@ -248,21 +248,21 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
         >
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center shadow-md">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-b from-green-400 via-green-500 to-green-200 flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.3)]">
                 <FileText size={28} className="text-white" />
               </div>
               <div>
-                <h2 className="text-3xl font-bold text-gray-900">Document Intelligence</h2>
-                <p className="text-sm text-gray-600 mt-1">
+                <h2 className="text-3xl font-bold text-white font-cbre">Document Intelligence</h2>
+                <p className="text-sm text-[#B7C4B8] mt-1">
                   {documents.length} document{documents.length !== 1 ? 's' : ''} analyzed
                 </p>
               </div>
             </div>
             
             {/* Upload Button */}
-            <label className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-gray-300 hover:border-blue-500 cursor-pointer transition-colors shadow-sm">
-              <Upload size={18} className="text-gray-600" />
-              <span className="text-sm font-medium text-gray-700">Upload</span>
+            <label className="flex items-center gap-2 px-4 py-2 bg-[#111513]/60 backdrop-blur-xl rounded-lg border border-[#1E3028] hover:border-[#00A86B]/50 cursor-pointer transition-colors shadow-sm">
+              <Upload size={18} className="text-[#B7C4B8]" />
+              <span className="text-sm font-medium text-[#C9E3D5]">Upload</span>
               <input
                 type="file"
                 accept=".pdf"
@@ -278,14 +278,14 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-3"
+              className="mb-4 p-4 bg-[#00A86B]/10 border border-[#00A86B]/40 rounded-lg flex items-center gap-3"
             >
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full"
+                className="w-5 h-5 border-2 border-[#00A86B] border-t-transparent rounded-full"
               />
-              <span className="text-sm text-blue-700">Processing {uploadedFile.name}...</span>
+              <span className="text-sm text-[#00A86B]">Processing {uploadedFile.name}...</span>
             </motion.div>
           )}
         </motion.div>
@@ -297,10 +297,10 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
-            className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+            className="bg-[#111513]/60 backdrop-blur-xl rounded-xl p-6 shadow-sm border border-[#1E3028] hover:shadow-md hover:border-[#00A86B]/40 transition-shadow"
           >
-            <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">Total Documents</div>
-            <div className="text-3xl font-bold text-gray-900">
+            <div className="text-xs font-medium text-[#B7C4B8] mb-2 uppercase tracking-wide">Total Documents</div>
+            <div className="text-3xl font-bold text-white">
               <AnimatedNumber value={aggregateMetrics.totalDocuments} />
             </div>
           </motion.div>
@@ -310,10 +310,10 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="bg-white rounded-xl p-6 shadow-sm border border-yellow-200 hover:shadow-md transition-shadow"
+            className="bg-[#111513]/60 backdrop-blur-xl rounded-xl p-6 shadow-sm border border-[#88C999]/40 hover:shadow-md transition-shadow"
           >
-            <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">Expiring Soon</div>
-            <div className="text-3xl font-bold text-yellow-600">
+            <div className="text-xs font-medium text-[#B7C4B8] mb-2 uppercase tracking-wide">Expiring Soon</div>
+            <div className="text-3xl font-bold text-[#88C999]">
               <AnimatedNumber value={aggregateMetrics.expiringSoon} />
             </div>
           </motion.div>
@@ -323,9 +323,9 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
-            className={`bg-white rounded-xl p-6 shadow-sm border hover:shadow-md transition-shadow ${getComplianceBgColor(aggregateMetrics.averageCompliance)}`}
+            className={`bg-[#111513]/60 backdrop-blur-xl rounded-xl p-6 shadow-sm border hover:shadow-md transition-shadow ${getComplianceBgColor(aggregateMetrics.averageCompliance)}`}
           >
-            <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">Avg Compliance</div>
+            <div className="text-xs font-medium text-[#B7C4B8] mb-2 uppercase tracking-wide">Avg Compliance</div>
             <div className={`text-3xl font-bold ${getComplianceColor(aggregateMetrics.averageCompliance)}`}>
               <AnimatedNumber value={aggregateMetrics.averageCompliance} suffix="%" />
             </div>
@@ -336,10 +336,10 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4 }}
-            className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+            className="bg-[#111513]/60 backdrop-blur-xl rounded-xl p-6 shadow-sm border border-[#1E3028] hover:shadow-md hover:border-[#00A86B]/40 transition-shadow"
           >
-            <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">Total Clauses</div>
-            <div className="text-3xl font-bold text-gray-900">
+            <div className="text-xs font-medium text-[#B7C4B8] mb-2 uppercase tracking-wide">Total Clauses</div>
+            <div className="text-3xl font-bold text-white">
               <AnimatedNumber value={aggregateMetrics.totalClauses} />
             </div>
           </motion.div>
@@ -349,10 +349,10 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5 }}
-            className="bg-white rounded-xl p-6 shadow-sm border border-green-200 hover:shadow-md transition-shadow"
+            className="bg-[#111513]/60 backdrop-blur-xl rounded-xl p-6 shadow-sm border border-[#00A86B]/40 hover:shadow-md transition-shadow"
           >
-            <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">Monthly Rent</div>
-            <div className="text-3xl font-bold text-green-600">
+            <div className="text-xs font-medium text-[#B7C4B8] mb-2 uppercase tracking-wide">Monthly Rent</div>
+            <div className="text-3xl font-bold text-[#00A86B]">
               {aggregateMetrics.totalMonthlyRent}
             </div>
           </motion.div>
@@ -364,13 +364,13 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200 shadow-sm"
+            className="mb-8 p-6 bg-gradient-to-r from-[#00A86B]/10 to-[#88C999]/10 rounded-xl border border-[#00A86B]/40 shadow-sm"
           >
             <div className="flex items-start gap-3">
-              <Sparkles size={20} className="text-blue-600 mt-0.5 flex-shrink-0" />
+              <Sparkles size={20} className="text-[#00A86B] mt-0.5 flex-shrink-0" />
               <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">AI Insights</h3>
-                <p className="text-gray-700 leading-relaxed">{summary}</p>
+                <h3 className="text-sm font-semibold text-white mb-2 font-cbre">AI Insights</h3>
+                <p className="text-[#C9E3D5] leading-relaxed">{summary}</p>
               </div>
             </div>
           </motion.div>
@@ -386,16 +386,16 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-xl p-6 shadow-sm border border-gray-200"
+                className="bg-[#111513]/60 backdrop-blur-xl rounded-xl p-6 shadow-sm border border-[#1E3028]"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center shadow-md">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-b from-green-400 via-green-500 to-green-200 flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.3)]">
                       <FileText size={24} className="text-white" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-1">{doc.fileName}</h3>
-                      <p className="text-sm text-gray-600">{doc.numPages} pages</p>
+                      <h3 className="text-lg font-bold text-white mb-1 font-cbre">{doc.fileName}</h3>
+                      <p className="text-sm text-[#B7C4B8]">{doc.numPages} pages</p>
                     </div>
                   </div>
                   <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${getComplianceBgColor(doc.metrics.complianceScore)}`}>
@@ -408,26 +408,26 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
 
                 {/* Document Metrics Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <div className="text-xs font-medium text-gray-500 mb-1">Clauses</div>
-                    <div className="text-xl font-bold text-gray-900">{doc.metrics.totalClauses}</div>
+                  <div className="p-4 bg-[#111513]/40 rounded-lg border border-[#1E3028]">
+                    <div className="text-xs font-medium text-[#B7C4B8] mb-1">Clauses</div>
+                    <div className="text-xl font-bold text-white">{doc.metrics.totalClauses}</div>
                   </div>
-                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <div className="text-xs font-medium text-gray-500 mb-1">Monthly Rent</div>
-                    <div className="text-xl font-bold text-green-600">{doc.metrics.rentAmount}</div>
+                  <div className="p-4 bg-[#111513]/40 rounded-lg border border-[#1E3028]">
+                    <div className="text-xs font-medium text-[#B7C4B8] mb-1">Monthly Rent</div>
+                    <div className="text-xl font-bold text-[#00A86B]">{doc.metrics.rentAmount}</div>
                   </div>
-                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <div className="text-xs font-medium text-gray-500 mb-1">Status</div>
-                    <div className="text-xl font-bold text-gray-900">
+                  <div className="p-4 bg-[#111513]/40 rounded-lg border border-[#1E3028]">
+                    <div className="text-xs font-medium text-[#B7C4B8] mb-1">Status</div>
+                    <div className="text-xl font-bold text-white">
                       {doc.metrics.expiringSoon ? (
-                        <span className="text-yellow-600">Expiring Soon</span>
+                        <span className="text-[#88C999]">Expiring Soon</span>
                       ) : (
-                        <span className="text-green-600">Active</span>
+                        <span className="text-[#00A86B]">Active</span>
                       )}
                     </div>
                   </div>
-                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <div className="text-xs font-medium text-gray-500 mb-1">Compliance</div>
+                  <div className="p-4 bg-[#111513]/40 rounded-lg border border-[#1E3028]">
+                    <div className="text-xs font-medium text-[#B7C4B8] mb-1">Compliance</div>
                     <div className={`text-xl font-bold ${getComplianceColor(doc.metrics.complianceScore)}`}>
                       {doc.metrics.complianceScore}%
                     </div>

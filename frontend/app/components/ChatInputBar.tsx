@@ -66,9 +66,6 @@ export default function ChatInputBar({
         <motion.div
           animate={{
             scale: isFocused ? 1.02 : 1,
-            boxShadow: isFocused 
-              ? '0 10px 40px rgba(0, 174, 239, 0.15)' 
-              : '0 4px 20px rgba(0, 0, 0, 0.3)',
           }}
           transition={{ duration: 0.2 }}
           className="relative"
@@ -82,22 +79,24 @@ export default function ChatInputBar({
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             placeholder={placeholder}
-            className="w-full px-6 py-4 pr-32 rounded-xl bg-[#1f2228] border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-[#00AEEF]/50 transition-colors text-base font-normal"
+            className="w-full px-6 py-4 pr-32 rounded-xl bg-[#111513]/60 backdrop-blur-sm border border-[#1E3028] text-white placeholder-[#B7C4B8] focus:outline-none focus:border-[#00A86B]/50 transition-all duration-300 text-base font-normal"
             style={{
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+              boxShadow: isFocused 
+                ? '0 4px 20px rgba(0,168,107,0.2)' 
+                : '0 4px 20px rgba(0, 0, 0, 0.3)',
             }}
           />
           
           {/* Right side icons */}
           <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
             <button
-              className="p-2 text-white/40 hover:text-white/60 transition-colors"
+              className="p-2 text-[#B7C4B8]/60 hover:text-[#00A86B] transition-colors"
               title="Attach file"
             >
               <Paperclip size={18} />
             </button>
             <button
-              className="p-2 text-white/40 hover:text-white/60 transition-colors"
+              className="p-2 text-[#B7C4B8]/60 hover:text-[#00A86B] transition-colors"
               title="Camera"
             >
               <Camera size={18} />
@@ -107,7 +106,7 @@ export default function ChatInputBar({
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 onClick={handleSend}
-                className="p-2 text-[#00AEEF] hover:text-[#00C8FF] transition-colors"
+                className="p-2 text-[#00A86B] hover:text-[#88C999] transition-colors"
                 title="Send message"
               >
                 <Send size={18} />
@@ -129,12 +128,12 @@ export default function ChatInputBar({
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setShowModelDropdown(!showModelDropdown)}
-              className="flex items-center gap-2 text-white/60 hover:text-white/80 text-xs md:text-sm font-medium transition-colors"
+              className="flex items-center gap-2 text-[#B7C4B8] hover:text-white hover:border-[#00A86B]/40 text-xs md:text-sm font-medium transition-all duration-300 px-3 py-1.5 rounded border border-[#1E3028] hover:bg-[#00A86B]/5"
               style={{ fontWeight: 500 }}
             >
               <span>CURA 3.5 Smart</span>
-              <Lock size={12} className="text-white/40" />
-              <ChevronDown size={14} className={`text-white/40 transition-transform ${showModelDropdown ? 'rotate-180' : ''}`} />
+              <Lock size={12} className="text-[#B7C4B8]/60" />
+              <ChevronDown size={14} className={`text-[#B7C4B8]/60 transition-transform ${showModelDropdown ? 'rotate-180' : ''}`} />
             </button>
             
             {/* Dropdown (simplified - can be enhanced) */}
@@ -143,17 +142,17 @@ export default function ChatInputBar({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
-                className="absolute bottom-full mb-2 left-0 bg-[#1f2228] border border-white/10 rounded-lg p-2 min-w-[200px] shadow-xl z-50"
+                className="absolute bottom-full mb-2 left-0 bg-[#111513]/95 backdrop-blur-md border border-[#1E3028] rounded-lg p-2 min-w-[200px] shadow-xl z-50"
               >
                 <button 
                   onClick={() => setShowModelDropdown(false)}
-                  className="w-full text-left px-3 py-2 text-sm text-white/80 hover:bg-white/5 rounded transition-colors"
+                  className="w-full text-left px-3 py-2 text-sm text-white/80 hover:bg-[#00A86B]/10 hover:text-white rounded transition-colors"
                 >
                   CURA 3.5 Smart
                 </button>
                 <button 
                   onClick={() => setShowModelDropdown(false)}
-                  className="w-full text-left px-3 py-2 text-sm text-white/60 hover:bg-white/5 rounded transition-colors"
+                  className="w-full text-left px-3 py-2 text-sm text-[#B7C4B8] hover:bg-[#00A86B]/10 hover:text-white rounded transition-colors"
                 >
                   CURA 4.0 Pro
                 </button>
@@ -161,14 +160,14 @@ export default function ChatInputBar({
             )}
           </div>
           
-          <div className="flex items-center gap-1 px-2 py-1 rounded bg-white/5 border border-white/10">
-            <span className="text-xs text-white/60">Formal</span>
-            <ChevronDown size={12} className="text-white/40" />
+          <div className="flex items-center gap-1 px-2 py-1 rounded bg-[#111513]/60 border border-[#1E3028]">
+            <span className="text-xs text-[#B7C4B8]">Formal</span>
+            <ChevronDown size={12} className="text-[#B7C4B8]/60" />
           </div>
         </div>
 
         {/* Right: Hints */}
-        <div className="flex items-center gap-4 text-xs text-white/50">
+        <div className="flex items-center gap-4 text-xs text-[#B7C4B8]">
           <span className="hidden sm:inline">Use shift + return for new line</span>
         </div>
       </motion.div>
@@ -178,7 +177,7 @@ export default function ChatInputBar({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.8, duration: 0.6 }}
-        className="text-xs text-white/40 mt-3 text-center"
+        className="text-xs text-[#B7C4B8]/60 mt-3 text-center"
       >
         CURA can make mistakes. Please verify results.
       </motion.p>

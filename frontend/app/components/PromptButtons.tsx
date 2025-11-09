@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, BarChart3, Home, FileText, Search } from 'lucide-react'
 import { useState } from 'react'
 
 interface PromptButtonsProps {
@@ -13,18 +13,22 @@ const defaultPrompts = [
   {
     text: 'Get property insights',
     query: 'show me properties in Jakarta with market analysis',
+    icon: Home,
   },
   {
     text: 'Predict market trends',
     query: 'predict next quarter performance and market trends',
+    icon: BarChart3,
   },
   {
     text: 'Analyze contracts',
     query: 'analyze real estate contracts and extract key terms',
+    icon: FileText,
   },
   {
     text: 'Summarize documents',
     query: 'summarize key points from uploaded documents',
+    icon: Search,
   },
 ]
 
@@ -48,21 +52,25 @@ export default function PromptButtons({ onPromptSelect, onRefresh }: PromptButto
     <div className="flex flex-col items-center gap-4 mb-8 w-full px-4">
       {/* Prompt Buttons */}
       <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 max-w-3xl w-full">
-        {prompts.map((prompt, index) => (
-          <motion.button
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 + index * 0.1, duration: 0.5 }}
-            whileHover={{ scale: 1.05, y: -2 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => onPromptSelect(prompt.query)}
-            className="px-4 md:px-6 py-2.5 md:py-3 rounded-md bg-[#1f2228] hover:bg-[#262a31] text-white text-xs md:text-sm font-medium transition-colors border border-white/5 hover:border-white/10 shadow-lg"
-            style={{ fontWeight: 500 }}
-          >
-            {prompt.text}
-          </motion.button>
-        ))}
+        {prompts.map((prompt, index) => {
+          const Icon = prompt.icon
+          return (
+            <motion.button
+              key={`${prompt.text}-${index}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 + index * 0.1, duration: 0.5 }}
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => onPromptSelect(prompt.query)}
+              className="flex items-center gap-2 bg-[#111513]/60 border border-[#1E3028] text-[#C9E3D5] hover:bg-[#00A86B]/10 hover:border-[#00A86B]/40 hover:text-white transition-all duration-300 rounded-md px-5 py-2.5 shadow-[0_0_10px_rgba(0,168,107,0.15)] text-xs md:text-sm font-medium"
+              style={{ fontWeight: 500 }}
+            >
+              <Icon className="w-4 h-4" />
+              {prompt.text}
+            </motion.button>
+          )
+        })}
       </div>
 
       {/* Refresh Button */}
@@ -73,7 +81,7 @@ export default function PromptButtons({ onPromptSelect, onRefresh }: PromptButto
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={handleRefresh}
-        className="flex items-center gap-2 text-white/60 hover:text-white/80 text-xs font-medium transition-colors"
+        className="flex items-center gap-2 text-[#B7C4B8] hover:text-white/80 text-xs font-medium transition-colors"
       >
         <motion.div
           animate={{ rotate: isRefreshing ? 360 : 0 }}

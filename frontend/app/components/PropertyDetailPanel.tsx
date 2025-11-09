@@ -53,7 +53,7 @@ export default function PropertyDetailPanel({ property }: PropertyDetailPanelPro
       className="w-[380px] flex-shrink-0 flex flex-col gap-3 p-3 overflow-y-auto"
     >
       {/* Property Details Card - Compacted */}
-      <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-gray-100 overflow-visible">
+      <div className="bg-[#111513]/60 backdrop-blur-xl rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[#1E3028] overflow-visible">
         {/* Image Gallery - Smaller */}
         <div className="grid grid-cols-[2fr_1fr] gap-1.5 p-2.5">
           {/* Main large image */}
@@ -84,36 +84,36 @@ export default function PropertyDetailPanel({ property }: PropertyDetailPanelPro
         {/* Property Info - Compacted */}
         <div className="px-4 pb-4">
           {/* Title and Location */}
-          <h2 className="text-base font-bold text-gray-900 mb-0.5 leading-tight">{property.title}</h2>
-          <p className="text-[10px] text-gray-400 mb-2.5">📍 {property.address}</p>
+          <h2 className="text-base font-bold text-white mb-0.5 leading-tight font-cbre">{property.title}</h2>
+          <p className="text-[10px] text-[#B7C4B8] mb-2.5">📍 {property.address}</p>
           
           {/* Price and Rating */}
           <div className="flex items-center justify-between mb-3">
             <div>
-              <span className="text-xl font-bold text-gray-900">{property.price}</span>
-              <span className="text-xs text-gray-500">/month</span>
+              <span className="text-xl font-bold text-white font-cbre">{property.price}</span>
+              <span className="text-xs text-[#B7C4B8]">/month</span>
             </div>
-            <div className="flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded-lg">
-              <span className="text-yellow-400 text-xs">★</span>
-              <span className="text-xs font-semibold text-gray-700">{property.rating}</span>
+            <div className="flex items-center gap-1 bg-[#00A86B]/10 border border-[#00A86B]/40 px-2 py-0.5 rounded-lg">
+              <span className="text-[#88C999] text-xs">★</span>
+              <span className="text-xs font-semibold text-[#B7C4B8]">{property.rating}</span>
             </div>
           </div>
 
           {/* Tabs - Compacted */}
-          <div className="flex gap-6 mb-3 border-b border-gray-100">
+          <div className="flex gap-6 mb-3 border-b border-[#1E3028]">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`pb-2 text-xs font-medium transition-colors relative ${
-                  activeTab === tab.id ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
+                  activeTab === tab.id ? 'text-[#00A86B]' : 'text-[#B7C4B8] hover:text-white'
                 }`}
               >
                 {tab.label}
                 {activeTab === tab.id && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#00A86B] rounded-full"
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                   />
                 )}
@@ -123,8 +123,8 @@ export default function PropertyDetailPanel({ property }: PropertyDetailPanelPro
 
           {/* Description Section - Compacted */}
           <div className="mb-3">
-            <h3 className="text-[10px] font-semibold text-gray-900 uppercase tracking-wide mb-1.5">Description :</h3>
-            <p className="text-[10px] text-gray-600 leading-relaxed line-clamp-2">
+            <h3 className="text-[10px] font-semibold text-white uppercase tracking-wide mb-1.5 font-cbre">Description :</h3>
+            <p className="text-[10px] text-[#C9E3D5] leading-relaxed line-clamp-2">
               {property.description || '🏡 Welcome to Midnight Ridge Villa! Experience a peaceful escape at Midnight Ridge Villa, a modern retreat set on a quiet hillside with stunning views of valleys and starry nights.'}
             </p>
           </div>
@@ -135,11 +135,11 @@ export default function PropertyDetailPanel({ property }: PropertyDetailPanelPro
               <motion.div
                 key={i}
                 whileHover={{ scale: 1.03 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 text-xs font-medium shadow-sm hover:bg-gray-200 transition-all cursor-default"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#111513]/40 border border-[#1E3028] text-[#C9E3D5] text-xs font-medium shadow-sm hover:bg-[#00A86B]/10 hover:border-[#00A86B]/40 transition-all cursor-default"
               >
-                <spec.icon className="w-3.5 h-3.5 text-gray-500" />
-                <span className="font-semibold text-gray-900">{spec.value}</span>
-                <span className="text-gray-500 text-[10px]">{spec.label}</span>
+                <spec.icon className="w-3.5 h-3.5 text-[#00A86B]" />
+                <span className="font-semibold text-white">{spec.value}</span>
+                <span className="text-[#B7C4B8] text-[10px]">{spec.label}</span>
               </motion.div>
             ))}
           </div>
@@ -149,14 +149,14 @@ export default function PropertyDetailPanel({ property }: PropertyDetailPanelPro
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="flex-1 px-3 py-2 rounded-lg border-2 border-blue-600 text-blue-600 font-semibold text-xs hover:bg-blue-50 transition-all"
+              className="flex-1 px-3 py-2 rounded-lg border-2 border-[#00A86B] text-[#00A86B] font-semibold text-xs hover:bg-[#00A86B]/10 transition-all"
             >
               Contact Agent
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="flex-1 px-3 py-2 rounded-lg bg-blue-600 text-white font-semibold text-xs hover:bg-blue-700 transition-all shadow-md"
+              className="flex-1 px-3 py-2 rounded-lg bg-[#00A86B] text-white font-semibold text-xs hover:bg-[#88C999] transition-all shadow-[0_0_10px_rgba(0,168,107,0.3)]"
             >
               Order Now
             </motion.button>
