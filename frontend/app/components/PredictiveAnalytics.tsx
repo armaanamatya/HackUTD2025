@@ -19,36 +19,36 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 // Time period type
 type TimePeriod = '7d' | '30d' | '90d' | '1y'
 
-// Enterprise color palette - muted slate tones
+// Dark CBRE theme color palette
 const colors = {
   // Backgrounds
-  bg: 'bg-slate-50',
-  bgCard: 'bg-white',
-  bgHover: 'bg-slate-100',
-  bgGlass: 'bg-white/80 backdrop-blur-xl',
+  bg: 'bg-transparent',
+  bgCard: 'bg-[#111513]/60 backdrop-blur-xl',
+  bgHover: 'bg-[#00A86B]/10',
+  bgGlass: 'bg-[#111513]/60 backdrop-blur-xl',
   
   // Text - hierarchical
-  textPrimary: 'text-slate-900',
-  textSecondary: 'text-slate-600',
-  textTertiary: 'text-slate-500',
-  textMuted: 'text-slate-400',
+  textPrimary: 'text-white',
+  textSecondary: 'text-[#B7C4B8]',
+  textTertiary: 'text-[#B7C4B8]/80',
+  textMuted: 'text-[#B7C4B8]/60',
   
   // Borders
-  border: 'border-slate-200',
-  borderHover: 'border-slate-300',
-  borderSubtle: 'border-slate-100',
+  border: 'border-[#1E3028]',
+  borderHover: 'border-[#00A86B]/40',
+  borderSubtle: 'border-[#1E3028]',
   
-  // Accents - muted corporate
-  accentBlue: '#475569', // slate-600
-  accentGreen: '#059669', // emerald-600
-  accentAmber: '#D97706', // amber-600
-  accentRed: '#DC2626', // red-600
+  // Accents - CBRE green
+  accentBlue: '#00A86B', // CBRE green
+  accentGreen: '#00A86B', // CBRE green
+  accentAmber: '#88C999', // light green
+  accentRed: '#EF4444', // red-600
   
   // Status colors
-  success: '#10B981',
-  warning: '#F59E0B',
+  success: '#00A86B',
+  warning: '#88C999',
   error: '#EF4444',
-  info: '#3B82F6',
+  info: '#00A86B',
 }
 
 interface PredictiveAnalyticsProps {
@@ -144,9 +144,9 @@ export default function PredictiveAnalytics({ data }: PredictiveAnalyticsProps) 
 
   return (
     <div className={`h-full w-full overflow-hidden ${colors.bg} relative`}>
-      {/* Subtle ambient background glow */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-slate-50/50 pointer-events-none" />
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-slate-100/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+      {/* Subtle ambient background glow - dark theme */}
+      <div className="absolute inset-0 pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#00A86B]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
       
       <div className="relative h-full max-w-[1600px] mx-auto grid grid-cols-[2fr_1fr] gap-3 p-3 overflow-hidden">
         {/* LEFT COLUMN - Main Analytics Canvas */}
@@ -224,7 +224,7 @@ export default function PredictiveAnalytics({ data }: PredictiveAnalyticsProps) 
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`px-2.5 py-1.5 rounded-md bg-slate-900 text-white text-xs font-medium flex items-center gap-1.5 hover:bg-slate-800 transition-colors shadow-sm`}
+                className={`px-2.5 py-1.5 rounded-md bg-[#00A86B] text-white text-xs font-medium flex items-center gap-1.5 hover:bg-[#88C999] transition-colors shadow-[0_0_10px_rgba(0,168,107,0.3)]`}
                 style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}
               >
                 <Download className="w-3 h-3" />
@@ -245,17 +245,17 @@ export default function PredictiveAnalytics({ data }: PredictiveAnalyticsProps) 
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.04, duration: 0.3, ease: 'easeOut' }}
                   whileHover={{ y: -1 }}
-                  className={`${colors.bgCard} rounded-lg border ${colors.border} shadow-sm p-2.5 transition-all duration-200 hover:shadow-md hover:border-slate-300`}
+                  className={`${colors.bgCard} rounded-lg border ${colors.border} shadow-sm p-2.5 transition-all duration-200 hover:shadow-md hover:border-[#00A86B]/40`}
                 >
                   <div className="flex items-start justify-between mb-1.5">
                     <span className={`${colors.textTertiary} text-xs font-medium uppercase tracking-wider`} style={{ fontFamily: 'var(--font-inter), Inter, sans-serif', letterSpacing: '0.05em' }}>
                       {metric.label}
                     </span>
-                    <div className={`p-1 rounded ${isPositive ? 'bg-emerald-50' : 'bg-red-50'}`}>
+                    <div className={`p-1 rounded ${isPositive ? 'bg-[#00A86B]/20' : 'bg-red-500/20'}`}>
                       {isPositive ? (
-                        <TrendingUp className="w-2.5 h-2.5 text-emerald-600" />
+                        <TrendingUp className="w-2.5 h-2.5 text-[#00A86B]" />
                       ) : (
-                        <TrendingDown className="w-2.5 h-2.5 text-red-600" />
+                        <TrendingDown className="w-2.5 h-2.5 text-red-400" />
                       )}
                     </div>
                   </div>
@@ -265,7 +265,7 @@ export default function PredictiveAnalytics({ data }: PredictiveAnalyticsProps) 
                   </div>
 
                   <div className="flex items-center gap-1.5 mb-1.5">
-                    <span className={`text-xs font-medium ${isPositive ? 'text-emerald-600' : 'text-red-600'}`} style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}>
+                    <span className={`text-xs font-medium ${isPositive ? 'text-[#00A86B]' : 'text-red-400'}`} style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}>
                       {metric.change}
                     </span>
                     <span className={`${colors.textTertiary} text-xs`} style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}>
@@ -303,8 +303,8 @@ export default function PredictiveAnalytics({ data }: PredictiveAnalyticsProps) 
                   Drop probability by asset type
                 </p>
               </div>
-              <div className={`flex items-center gap-2 px-2 py-1 rounded-md bg-slate-50 border ${colors.borderSubtle}`}>
-                <BarChart3 className="w-3 h-3 text-slate-600" />
+              <div className={`flex items-center gap-2 px-2 py-1 rounded-md bg-[#111513]/40 border ${colors.borderSubtle}`}>
+                <BarChart3 className="w-3 h-3 text-[#00A86B]" />
                 <span className={`${colors.textSecondary} text-xs font-medium`} style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}>
                   Risk Score
                 </span>
@@ -314,35 +314,35 @@ export default function PredictiveAnalytics({ data }: PredictiveAnalyticsProps) 
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={predictions} margin={{ top: 8, right: 8, left: -16, bottom: 50 }}>
                 <defs>
-                  {/* Muted slate gradients */}
+                  {/* Dark theme CBRE gradients */}
                   <linearGradient id="lowRiskGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10B981" stopOpacity={0.85} />
-                    <stop offset="100%" stopColor="#059669" stopOpacity={0.7} />
+                    <stop offset="0%" stopColor="#00A86B" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#2D7D59" stopOpacity={0.8} />
                   </linearGradient>
                   <linearGradient id="mediumRiskGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.85} />
-                    <stop offset="100%" stopColor="#D97706" stopOpacity={0.7} />
+                    <stop offset="0%" stopColor="#88C999" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#00A86B" stopOpacity={0.8} />
                   </linearGradient>
                   <linearGradient id="highRiskGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#EF4444" stopOpacity={0.85} />
-                    <stop offset="100%" stopColor="#DC2626" stopOpacity={0.7} />
+                    <stop offset="0%" stopColor="#EF4444" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#DC2626" stopOpacity={0.8} />
                   </linearGradient>
                   <linearGradient id="highlightGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#475569" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#64748B" stopOpacity={0.9} />
+                    <stop offset="0%" stopColor="#00A86B" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#88C999" stopOpacity={0.9} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
                   vertical={false}
                   strokeDasharray="2 2"
-                  stroke="#E2E8F0"
+                  stroke="rgba(30, 48, 40, 0.5)"
                   strokeWidth={1}
                 />
                 <XAxis
                   dataKey="assetType"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: '#64748B', fontSize: 11, fontWeight: 500 }}
+                  tick={{ fill: '#B7C4B8', fontSize: 11, fontWeight: 500 }}
                   dy={8}
                   angle={-35}
                   textAnchor="end"
@@ -351,7 +351,7 @@ export default function PredictiveAnalytics({ data }: PredictiveAnalyticsProps) 
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: '#64748B', fontSize: 11, fontWeight: 500 }}
+                  tick={{ fill: '#B7C4B8', fontSize: 11, fontWeight: 500 }}
                   tickFormatter={(value) => `${(value * 100).toFixed(0)}%`}
                   dx={-8}
                 />
@@ -359,28 +359,34 @@ export default function PredictiveAnalytics({ data }: PredictiveAnalyticsProps) 
                 {/* Reference Line */}
                 <ReferenceLine
                   y={avgRisk}
-                  stroke="#94A3B8"
+                  stroke="#00A86B"
                   strokeDasharray="4 4"
                   strokeWidth={1.5}
+                  strokeOpacity={0.5}
                   label={{
                     value: `Avg: ${(avgRisk * 100).toFixed(1)}%`,
                     position: 'right',
-                    fill: '#64748B',
+                    fill: '#B7C4B8',
                     fontSize: 10,
                     fontWeight: 600,
                   }}
                 />
 
                 <Tooltip
-                  cursor={{ fill: 'rgba(71, 85, 105, 0.05)' }}
+                  cursor={{ fill: 'rgba(0, 168, 107, 0.1)' }}
+                  contentStyle={{ 
+                    backgroundColor: '#111513',
+                    border: '1px solid #1E3028',
+                    borderRadius: '8px',
+                  }}
                   content={({ active, payload }) => {
                     if (!active || !payload || !payload[0]) return null
                     const data = payload[0].payload
                     const riskLevel = data.dropRisk < 0.05 ? 'Low' : data.dropRisk < 0.10 ? 'Medium' : 'High'
                     const riskColors = {
-                      Low: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                      Medium: 'bg-amber-50 text-amber-700 border-amber-200',
-                      High: 'bg-red-50 text-red-700 border-red-200'
+                      Low: 'bg-[#00A86B]/20 text-[#00A86B] border-[#00A86B]/40',
+                      Medium: 'bg-[#88C999]/20 text-[#88C999] border-[#88C999]/40',
+                      High: 'bg-red-500/20 text-red-400 border-red-500/40'
                     }
                     
                     return (
@@ -419,8 +425,8 @@ export default function PredictiveAnalytics({ data }: PredictiveAnalyticsProps) 
                       <Cell
                         key={`cell-${index}`}
                         fill={entry.assetId === highlightedAsset ? 'url(#highlightGradient)' : getRiskGradient(entry.dropRisk)}
-                        stroke={entry.assetId === highlightedAsset ? '#475569' : 'none'}
-                        strokeWidth={entry.assetId === highlightedAsset ? 1.5 : 0}
+                        stroke={entry.assetId === highlightedAsset ? '#00A86B' : 'none'}
+                        strokeWidth={entry.assetId === highlightedAsset ? 2 : 0}
                         style={{
                           opacity: highlightedAsset && entry.assetId !== highlightedAsset ? 0.25 : 1,
                           transition: 'all 0.3s ease',
@@ -446,7 +452,7 @@ export default function PredictiveAnalytics({ data }: PredictiveAnalyticsProps) 
                 <div className={`${colors.textTertiary} text-xs font-medium uppercase tracking-wider mb-1`} style={{ fontFamily: 'var(--font-inter), Inter, sans-serif', letterSpacing: '0.05em' }}>
                   Accuracy
                 </div>
-                <div className={`${colors.textPrimary} text-base font-semibold text-emerald-600`} style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}>
+                <div className={`${colors.textPrimary} text-base font-semibold text-[#00A86B]`} style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}>
                   {modelStats.accuracy}
                 </div>
               </div>
@@ -474,8 +480,8 @@ export default function PredictiveAnalytics({ data }: PredictiveAnalyticsProps) 
               <h2 className={`${colors.textPrimary} text-sm font-semibold`} style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}>
                 System Alerts
               </h2>
-              <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-50 border ${colors.borderSubtle}`}>
-                <Clock className="w-3 h-3 text-slate-500" />
+              <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md bg-[#111513]/40 border ${colors.borderSubtle}`}>
+                <Clock className="w-3 h-3 text-[#B7C4B8]" />
                 <span className={`${colors.textTertiary} text-xs`} style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}>
                   3m ago
                 </span>
@@ -486,24 +492,24 @@ export default function PredictiveAnalytics({ data }: PredictiveAnalyticsProps) 
               {insights.map((insight, index) => {
                 const config = {
                   warning: {
-                    border: 'border-amber-200',
-                    bg: 'bg-amber-50/50',
-                    iconBg: 'bg-amber-100',
-                    iconColor: 'text-amber-600',
+                    border: 'border-[#88C999]/40',
+                    bg: 'bg-[#88C999]/10',
+                    iconBg: 'bg-[#88C999]/20',
+                    iconColor: 'text-[#88C999]',
                     accent: colors.accentAmber,
                   },
                   growth: {
-                    border: 'border-emerald-200',
-                    bg: 'bg-emerald-50/50',
-                    iconBg: 'bg-emerald-100',
-                    iconColor: 'text-emerald-600',
+                    border: 'border-[#00A86B]/40',
+                    bg: 'bg-[#00A86B]/10',
+                    iconBg: 'bg-[#00A86B]/20',
+                    iconColor: 'text-[#00A86B]',
                     accent: colors.accentGreen,
                   },
                   alert: {
-                    border: 'border-red-200',
-                    bg: 'bg-red-50/50',
-                    iconBg: 'bg-red-100',
-                    iconColor: 'text-red-600',
+                    border: 'border-red-500/40',
+                    bg: 'bg-red-500/10',
+                    iconBg: 'bg-red-500/20',
+                    iconColor: 'text-red-400',
                     accent: colors.accentRed,
                   },
                 }[insight.type]
@@ -519,7 +525,7 @@ export default function PredictiveAnalytics({ data }: PredictiveAnalyticsProps) 
                     transition={{ delay: 0.15 + index * 0.03, duration: 0.3, ease: 'easeOut' }}
                     whileHover={{ x: 2 }}
                     onClick={() => handleInsightClick(insight.assetId)}
-                    className={`group ${colors.bgCard} rounded-lg border ${isHighlighted ? 'border-slate-400' : config.border} ${config.bg} shadow-sm p-2.5 transition-all duration-200 cursor-pointer hover:shadow-md`}
+                    className={`group ${colors.bgCard} rounded-lg border ${isHighlighted ? 'border-[#00A86B]/60' : config.border} ${config.bg} shadow-sm p-2.5 transition-all duration-200 cursor-pointer hover:shadow-md`}
                   >
                     <div className="flex items-start gap-2.5">
                       <div className={`flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center ${config.iconBg}`}>
@@ -537,7 +543,7 @@ export default function PredictiveAnalytics({ data }: PredictiveAnalyticsProps) 
                             <span className={`${colors.textTertiary} text-xs font-medium`} style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}>
                               {insight.confidence}%
                             </span>
-                            <div className="w-10 h-1 rounded-full bg-slate-100 overflow-hidden">
+                            <div className="w-10 h-1 rounded-full bg-[#1E3028] overflow-hidden">
                               <motion.div
                                 initial={{ width: 0 }}
                                 animate={{ width: `${insight.confidence}%` }}
@@ -559,22 +565,6 @@ export default function PredictiveAnalytics({ data }: PredictiveAnalyticsProps) 
         </div>
       </div>
 
-      <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #F1F5F9;
-          border-radius: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #CBD5E1;
-          border-radius: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #94A3B8;
-        }
-      `}</style>
     </div>
   )
 }

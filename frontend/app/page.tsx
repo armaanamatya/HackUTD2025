@@ -161,84 +161,45 @@ export default function Home() {
 
   return (
     <div 
-      className={`h-screen w-screen overflow-hidden flex flex-col ${
-        viewMode !== 'home' 
-          ? 'bg-gradient-to-br from-gray-50 via-blue-50/30 to-green-50/30' 
-          : ''
-      }`}
-      style={viewMode === 'home' ? {
-        background: 'radial-gradient(ellipse at center, #0f1014 0%, #1a1c21 100%)',
-      } : {}}
+      className="h-screen w-screen overflow-hidden flex flex-col"
+      style={{
+        background: 'radial-gradient(circle at top, #0B0E0C 0%, #111513 100%)',
+      }}
     >
-      {/* Top Bar - Hidden on home, shown on other views */}
-      {viewMode !== 'home' && (
-        <motion.header
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="h-16 px-6 border-b border-gray-200/50 bg-white/80 backdrop-blur-xl flex items-center justify-between shadow-sm"
-        >
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <motion.div
-              animate={{ 
-                rotate: [0, 360],
-                scale: [1, 1.1, 1]
-              }}
-              transition={{ 
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              className="relative"
-            >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center shadow-lg">
-                <Zap size={20} className="text-white" />
-              </div>
-            </motion.div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">CURA</h1>
-              <p className="text-xs text-gray-500">Agentic AI Workspace</p>
-            </div>
+      {/* Top Bar - Consistent dark theme for all views */}
+      <motion.header
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className={`h-16 px-6 border-b border-[#1E3028] bg-[#111513]/60 backdrop-blur-xl flex items-center justify-between ${
+          viewMode === 'home' ? 'absolute top-0 left-0 right-0 z-10 border-transparent' : 'relative'
+        }`}
+      >
+        {/* Logo */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Zap size={20} className="text-[#00A86B]" />
+            <h1 className="text-lg font-semibold text-white font-cbre tracking-tight">CURA</h1>
           </div>
+        </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-3">
+        {/* Actions */}
+        <div className="flex items-center gap-3">
+          {viewMode !== 'home' && (
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setViewMode('home')}
-              className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-sm font-medium text-gray-700 transition-colors"
+              className="px-4 py-2 rounded-md bg-[#111513]/60 border border-[#1E3028] hover:bg-[#00A86B]/10 hover:border-[#00A86B]/40 text-sm font-medium text-[#B7C4B8] hover:text-white transition-all duration-300"
             >
               Back to Home
             </motion.button>
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center text-white text-sm font-semibold shadow-md">
-              JD
-            </div>
-          </div>
-        </motion.header>
-      )}
-
-      {/* Home View Top Bar - Minimalist with logo and avatar */}
-      {viewMode === 'home' && (
-        <motion.header
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="absolute top-0 left-0 right-0 h-16 px-6 flex items-center justify-between z-10"
-        >
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <Zap size={20} className="text-white" />
-              <h1 className="text-lg font-semibold text-white font-cbre tracking-tight">CURA</h1>
-            </div>
-          </div>
-
-          {/* User Avatar */}
-          <div className="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white text-sm font-semibold backdrop-blur-sm">
+          )}
+          <div className="w-9 h-9 rounded-full bg-[#111513]/60 border border-[#1E3028] flex items-center justify-center text-white text-sm font-semibold backdrop-blur-sm">
             JD
           </div>
-        </motion.header>
-      )}
+        </div>
+      </motion.header>
+
 
       {/* Main Content Area with Persistent Chat Panel */}
       <div className="flex-1 overflow-hidden relative flex">
@@ -302,6 +263,16 @@ function HomeView({
             placeholder="How can CURA help you today?"
           />
         </div>
+
+        {/* Footer */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2, duration: 0.6 }}
+          className="text-xs text-[#B7C4B8]/50 mt-12 md:mt-16"
+        >
+          Powered by <span className="text-[#00A86B] font-medium">CURA • CBRE</span>
+        </motion.p>
       </div>
     </div>
   )

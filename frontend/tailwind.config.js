@@ -21,6 +21,11 @@ export default {
         cura: {
           blue: '#00AEEF',
         },
+        cbre: {
+          green: '#00A86B',
+          greenLight: '#88C999',
+          greenDark: '#2D7D59',
+        },
       },
       fontFamily: {
         sans: ['Satoshi', 'system-ui', 'sans-serif'],

@@ -20,10 +20,10 @@ export default function PropertyMap({ property }: PropertyMapProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
-      className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-gray-100 overflow-hidden h-[180px] relative"
+      className="bg-[#111513]/60 backdrop-blur-xl rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-[#1E3028] overflow-hidden h-[180px] relative"
     >
       {/* Mock Map Background with more realistic styling */}
-      <div className="w-full h-full bg-gradient-to-br from-blue-50 via-gray-50 to-green-50 relative">
+      <div className="w-full h-full bg-gradient-to-br from-[#0B0E0C] via-[#111513] to-[#0B0E0C] relative">
         {/* Subtle grid pattern */}
         <div className="absolute inset-0 opacity-10">
           <svg width="100%" height="100%">
@@ -55,7 +55,7 @@ export default function PropertyMap({ property }: PropertyMapProps) {
             <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-1.5 bg-black/20 rounded-full blur-sm" />
             
             {/* Main pin - smaller */}
-            <div className="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+            <div className="w-9 h-9 bg-[#00A86B] rounded-full flex items-center justify-center shadow-lg border-2 border-white">
               <MapPin size={18} className="text-white fill-white" />
             </div>
             
@@ -70,16 +70,16 @@ export default function PropertyMap({ property }: PropertyMapProps) {
                 repeat: Infinity,
                 ease: 'easeInOut',
               }}
-              className="absolute inset-0 bg-blue-600 rounded-full -z-10"
+              className="absolute inset-0 bg-[#00A86B] rounded-full -z-10"
             />
           </div>
         </motion.div>
 
         {/* Additional smaller markers */}
-        <div className="absolute top-[25%] left-[30%] w-2 h-2 bg-gray-400 rounded-full shadow-sm" />
-        <div className="absolute top-[65%] left-[65%] w-2 h-2 bg-gray-400 rounded-full shadow-sm" />
-        <div className="absolute top-[40%] right-[25%] w-2 h-2 bg-gray-400 rounded-full shadow-sm" />
-        <div className="absolute bottom-[30%] left-[20%] w-2 h-2 bg-gray-400 rounded-full shadow-sm" />
+        <div className="absolute top-[25%] left-[30%] w-2 h-2 bg-[#00A86B]/60 rounded-full shadow-sm" />
+        <div className="absolute top-[65%] left-[65%] w-2 h-2 bg-[#00A86B]/60 rounded-full shadow-sm" />
+        <div className="absolute top-[40%] right-[25%] w-2 h-2 bg-[#00A86B]/60 rounded-full shadow-sm" />
+        <div className="absolute bottom-[30%] left-[20%] w-2 h-2 bg-[#00A86B]/60 rounded-full shadow-sm" />
 
         {/* Location Info Card - Bottom - Compacted */}
         <motion.div
@@ -88,10 +88,10 @@ export default function PropertyMap({ property }: PropertyMapProps) {
           transition={{ delay: 0.6 }}
           className="absolute bottom-2 left-2 right-2"
         >
-          <div className="bg-white/95 backdrop-blur-md rounded-lg px-2.5 py-2 shadow-lg border border-gray-100">
+          <div className="bg-[#111513]/95 backdrop-blur-md rounded-lg px-2.5 py-2 shadow-lg border border-[#1E3028]">
             <div className="flex items-center gap-2">
               {/* Small thumbnail */}
-              <div className="w-10 h-10 rounded-md overflow-hidden flex-shrink-0 bg-gray-200">
+              <div className="w-10 h-10 rounded-md overflow-hidden flex-shrink-0 bg-[#1E3028]">
                 <img 
                   src={property.image} 
                   alt={property.title} 
@@ -100,8 +100,8 @@ export default function PropertyMap({ property }: PropertyMapProps) {
               </div>
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-bold text-gray-900 truncate mb-0.5">{property.title}</p>
-                <p className="text-[9px] text-gray-500 truncate">{property.address}</p>
+                <p className="text-[10px] font-bold text-white truncate mb-0.5 font-cbre">{property.title}</p>
+                <p className="text-[9px] text-[#B7C4B8] truncate">{property.address}</p>
               </div>
             </div>
           </div>

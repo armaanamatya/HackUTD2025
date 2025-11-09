@@ -11,7 +11,7 @@ export default function PropertyDiscovery({ data }: PropertyDiscoveryProps) {
   const filters = data?.filters || {}
 
   return (
-    <div className="h-full w-full bg-[#F9FAFB]">
+    <div className="h-full w-full">
       {/* Property Grid with Details Panel */}
       <PropertyGrid properties={properties} filters={filters} />
     </div>

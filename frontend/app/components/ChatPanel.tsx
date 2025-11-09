@@ -63,23 +63,23 @@ export default function ChatPanel({ onSendMessage, isProcessing }: ChatPanelProp
     <motion.div
       initial={{ x: -20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="w-[380px] flex-shrink-0 bg-white border-r border-gray-200 flex flex-col h-full shadow-sm"
+      className="w-[380px] flex-shrink-0 bg-[#111513]/60 backdrop-blur-xl border-r border-[#1E3028] flex flex-col h-full"
     >
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-6 border-b border-[#1E3028]">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center shadow-md">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-b from-green-400 via-green-500 to-green-200 flex items-center justify-center shadow-[0_0_20px_rgba(34,197,94,0.3)]">
             <Sparkles size={20} className="text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-gray-900">CURA Assistant</h3>
-            <p className="text-xs text-gray-500">Always here to help</p>
+            <h3 className="text-lg font-semibold text-white font-cbre">CURA Assistant</h3>
+            <p className="text-xs text-[#B7C4B8]">Always here to help</p>
           </div>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
         <AnimatePresence>
           {messages.map((message, index) => (
             <motion.div
@@ -90,16 +90,16 @@ export default function ChatPanel({ onSendMessage, isProcessing }: ChatPanelProp
               className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-3 ${
+                className={`max-w-[85%] rounded-xl px-4 py-3 ${
                   message.sender === 'user'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-900'
+                    ? 'bg-[#00A86B] text-white'
+                    : 'bg-[#111513]/80 border border-[#1E3028] text-[#C9E3D5]'
                 }`}
               >
                 <p className="text-sm leading-relaxed">{message.content}</p>
                 <p
                   className={`text-xs mt-1 ${
-                    message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
+                    message.sender === 'user' ? 'text-white/70' : 'text-[#B7C4B8]'
                   }`}
                 >
                   {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -115,22 +115,22 @@ export default function ChatPanel({ onSendMessage, isProcessing }: ChatPanelProp
             animate={{ opacity: 1 }}
             className="flex justify-start"
           >
-            <div className="bg-gray-100 rounded-2xl px-4 py-3">
+            <div className="bg-[#111513]/80 border border-[#1E3028] rounded-xl px-4 py-3">
               <div className="flex gap-1.5">
                 <motion.div
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
-                  className="w-2 h-2 bg-gray-400 rounded-full"
+                  className="w-2 h-2 bg-[#00A86B] rounded-full"
                 />
                 <motion.div
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
-                  className="w-2 h-2 bg-gray-400 rounded-full"
+                  className="w-2 h-2 bg-[#00A86B] rounded-full"
                 />
                 <motion.div
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
-                  className="w-2 h-2 bg-gray-400 rounded-full"
+                  className="w-2 h-2 bg-[#00A86B] rounded-full"
                 />
               </div>
             </div>
@@ -139,7 +139,7 @@ export default function ChatPanel({ onSendMessage, isProcessing }: ChatPanelProp
       </div>
 
       {/* Input Bar */}
-      <div className="p-4 border-t border-gray-200 bg-gray-50">
+      <div className="p-4 border-t border-[#1E3028] bg-[#111513]/40">
         <div className="flex items-center gap-2">
           <div className="flex-1 relative">
             <input
@@ -149,11 +149,11 @@ export default function ChatPanel({ onSendMessage, isProcessing }: ChatPanelProp
               onKeyPress={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Ask CURA anything..."
               disabled={isProcessing}
-              className="w-full px-4 py-3 pr-10 rounded-xl bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-sm transition-all disabled:opacity-50"
+              className="w-full px-4 py-3 pr-10 rounded-xl bg-[#111513]/60 border border-[#1E3028] focus:border-[#00A86B]/50 focus:ring-2 focus:ring-[#00A86B]/20 outline-none text-sm text-white placeholder-[#B7C4B8] transition-all disabled:opacity-50"
             />
             <button
               onClick={() => {}}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#B7C4B8] hover:text-[#00A86B] transition-colors"
             >
               <Paperclip size={18} />
             </button>
@@ -162,7 +162,7 @@ export default function ChatPanel({ onSendMessage, isProcessing }: ChatPanelProp
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => {}}
-            className="p-3 rounded-xl bg-gray-200 text-gray-600 hover:bg-gray-300 transition-colors"
+            className="p-3 rounded-xl bg-[#111513]/60 border border-[#1E3028] text-[#B7C4B8] hover:text-white hover:border-[#00A86B]/40 transition-all"
           >
             <Mic size={18} />
           </motion.button>
@@ -171,7 +171,7 @@ export default function ChatPanel({ onSendMessage, isProcessing }: ChatPanelProp
             whileTap={{ scale: 0.95 }}
             onClick={handleSend}
             disabled={!input.trim() || isProcessing}
-            className="p-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/30"
+            className="p-3 rounded-xl bg-[#00A86B] text-white hover:bg-[#88C999] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(0,168,107,0.3)]"
           >
             <Send size={18} />
           </motion.button>
