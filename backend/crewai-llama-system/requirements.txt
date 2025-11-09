@@ -24,3 +24,11 @@ google-generativeai
 # FastAPI and web server
 fastapi
 uvicorn[standard]
+
+# Database
+motor
+pymongo
+beanie
+
+# Data processing
+pandas

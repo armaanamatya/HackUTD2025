@@ -25,6 +25,8 @@ sys.path.append(str(Path(__file__).parent / "src"))
 
 from src.crews import ResearchCrew, ProjectPlanningCrew
 from config import llm_config
+from config.database import connect_to_mongo, close_mongo_connection
+from config.models import AnalysisJob, PropertyInsight, RealEstateReport, FileUpload, MarketListing, JobStatus, JobType
 
 app = FastAPI(
     title="CrewAI Agent API",
@@ -56,6 +58,23 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Database startup and shutdown events
+@app.on_event("startup")
+async def startup_event():
+    """Connect to MongoDB on startup"""
+    try:
+        await connect_to_mongo()
+        logger.info("✓ Database connection established")
+    except Exception as e:
+        logger.error(f"✗ Failed to connect to database: {e}")
+        raise
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Close MongoDB connection on shutdown"""
+    await close_mongo_connection()
+    logger.info("Database connection closed")
 
 # In-memory storage for job tracking
 job_store: Dict[str, Dict[str, Any]] = {}
@@ -96,11 +115,13 @@ async def root():
         "version": "1.0.0",
         "endpoints": {
             "/research": "POST - Run research crew",
-            "/project-planning": "POST - Run project planning crew",
+            "/project-planning": "POST - Run project planning crew", 
             "/research-with-files": "POST - Run research crew with file context",
             "/project-planning-with-files": "POST - Run project planning crew with file context",
             "/jobs/{job_id}": "GET - Get job status and results",
             "/jobs": "GET - List all jobs",
+            "/listings": "GET - Get market listings",
+            "/listings/search": "POST - Search market listings",
             "/config": "GET - Show LLM configuration"
         }
     }
@@ -116,48 +137,65 @@ async def get_config():
 async def start_research(request: ResearchRequest, background_tasks: BackgroundTasks):
     job_id = str(uuid.uuid4())
     
-    # Create job record
-    job_store[job_id] = {
-        "job_id": job_id,
-        "status": "pending",
-        "created_at": datetime.now().isoformat(),
-        "type": "research",
-        "input": request.topic,
-        "result": None,
-        "error": None
-    }
+    # Create job record in MongoDB
+    job = AnalysisJob(
+        job_id=job_id,
+        job_type=JobType.PROPERTY_INSIGHTS,
+        status=JobStatus.PENDING,
+        user_query=request.topic,
+        input_parameters={"topic": request.topic}
+    )
+    await job.save()
     
     # Start background task
     background_tasks.add_task(run_research_job, job_id, request.topic)
     
-    return JobResponse(**job_store[job_id])
+    return JobResponse(
+        job_id=job.job_id,
+        status=job.status,
+        created_at=job.created_at.isoformat(),
+        result=job.result_text,
+        error=job.error_message
+    )
 
 @app.post("/project-planning", response_model=JobResponse)
 async def start_project_planning(request: ProjectPlanningRequest, background_tasks: BackgroundTasks):
     job_id = str(uuid.uuid4())
     
-    # Create job record
-    job_store[job_id] = {
-        "job_id": job_id,
-        "status": "pending",
-        "created_at": datetime.now().isoformat(),
-        "type": "project-planning",
-        "input": request.project_description,
-        "result": None,
-        "error": None
-    }
+    # Create job record in MongoDB
+    job = AnalysisJob(
+        job_id=job_id,
+        job_type=JobType.REPORT_GENERATION,
+        status=JobStatus.PENDING,
+        user_query=request.project_description,
+        input_parameters={"project_description": request.project_description}
+    )
+    await job.save()
     
     # Start background task
     background_tasks.add_task(run_project_planning_job, job_id, request.project_description)
     
-    return JobResponse(**job_store[job_id])
+    return JobResponse(
+        job_id=job.job_id,
+        status=job.status,
+        created_at=job.created_at.isoformat(),
+        result=job.result_text,
+        error=job.error_message
+    )
 
 @app.get("/jobs/{job_id}", response_model=JobResponse)
 async def get_job_status(job_id: str):
-    if job_id not in job_store:
+    job = await AnalysisJob.find_one(AnalysisJob.job_id == job_id)
+    if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     
-    return JobResponse(**job_store[job_id])
+    return JobResponse(
+        job_id=job.job_id,
+        status=job.status,
+        created_at=job.created_at.isoformat(),
+        result=job.result_text,
+        error=job.error_message
+    )
 
 @app.get("/jobs")
 async def list_jobs():
@@ -213,13 +251,193 @@ async def start_project_planning_with_files(request: ProjectPlanningWithFilesReq
     
     return JobResponse(**job_store[job_id])
 
+# Helper function to clean NaN values from dictionaries
+def clean_nan_values(obj: Any) -> Any:
+    """Recursively convert NaN values to None for JSON serialization"""
+    import math
+    
+    if isinstance(obj, dict):
+        return {key: clean_nan_values(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [clean_nan_values(item) for item in obj]
+    elif isinstance(obj, float):
+        if math.isnan(obj):
+            return None
+        return obj
+    else:
+        return obj
+
+# Market Listings Endpoints
+@app.get("/listings")
+async def get_market_listings(
+    city: Optional[str] = None,
+    state: Optional[str] = None,
+    min_price: Optional[float] = None,
+    max_price: Optional[float] = None,
+    property_type: Optional[str] = None,
+    status: Optional[str] = None,
+    limit: int = 100,
+    skip: int = 0
+):
+    """Get market listings with optional filters"""
+    try:
+        # Build filter query
+        filters = {}
+        if city:
+            filters["city"] = {"$regex": city, "$options": "i"}
+        if state:
+            filters["state"] = state.upper()
+        if min_price is not None or max_price is not None:
+            price_filter = {}
+            if min_price is not None:
+                price_filter["$gte"] = min_price
+            if max_price is not None:
+                price_filter["$lte"] = max_price
+            filters["listing_price"] = price_filter
+        if property_type:
+            filters["property_type"] = property_type
+        if status:
+            filters["status"] = status
+        
+        # Query database
+        cursor = MarketListing.find(filters).skip(skip).limit(limit)
+        listings = await cursor.to_list()
+        
+        # Get total count
+        total_count = await MarketListing.find(filters).count()
+        
+        # Convert listings to dicts and clean NaN values
+        listings_dicts = [clean_nan_values(listing.dict()) for listing in listings]
+        
+        return {
+            "listings": listings_dicts,
+            "total_count": total_count,
+            "returned_count": len(listings),
+            "skip": skip,
+            "limit": limit
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching listings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+class ListingSearchRequest(BaseModel):
+    query: str
+    filters: Optional[Dict[str, Any]] = {}
+    limit: int = 50
+
+@app.post("/listings/search")
+async def search_listings(request: ListingSearchRequest):
+    """Search market listings by address, city, or neighborhood"""
+    try:
+        # Build search query
+        search_filters = []
+        
+        # Text search across multiple fields
+        if request.query:
+            search_pattern = {"$regex": request.query, "$options": "i"}
+            search_filters.append({
+                "$or": [
+                    {"address": search_pattern},
+                    {"city": search_pattern},
+                    {"neighborhood": search_pattern},
+                    {"zip_code": search_pattern}
+                ]
+            })
+        
+        # Add additional filters
+        if request.filters:
+            search_filters.append(request.filters)
+        
+        # Combine filters
+        if search_filters:
+            final_filter = {"$and": search_filters} if len(search_filters) > 1 else search_filters[0]
+        else:
+            final_filter = {}
+        
+        # Execute search
+        cursor = MarketListing.find(final_filter).limit(request.limit)
+        listings = await cursor.to_list()
+        
+        # Convert listings to dicts and clean NaN values
+        listings_dicts = [clean_nan_values(listing.dict()) for listing in listings]
+        
+        return {
+            "query": request.query,
+            "results": listings_dicts,
+            "count": len(listings)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error searching listings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/listings/stats")
+async def get_listing_stats():
+    """Get market listing statistics"""
+    try:
+        total_listings = await MarketListing.count()
+        
+        # Aggregate statistics
+        pipeline = [
+            {
+                "$group": {
+                    "_id": "$city",
+                    "count": {"$sum": 1},
+                    "avg_price": {"$avg": "$listing_price"},
+                    "min_price": {"$min": "$listing_price"},
+                    "max_price": {"$max": "$listing_price"}
+                }
+            },
+            {"$sort": {"count": -1}},
+            {"$limit": 10}
+        ]
+        
+        city_stats = await MarketListing.aggregate(pipeline).to_list()
+        
+        # Property type distribution
+        type_pipeline = [
+            {
+                "$group": {
+                    "_id": "$property_type",
+                    "count": {"$sum": 1}
+                }
+            },
+            {"$sort": {"count": -1}}
+        ]
+        
+        type_stats = await MarketListing.aggregate(type_pipeline).to_list()
+        
+        # Clean NaN values from stats
+        city_stats_cleaned = clean_nan_values(city_stats)
+        type_stats_cleaned = clean_nan_values(type_stats)
+        
+        return {
+            "total_listings": total_listings,
+            "top_cities": city_stats_cleaned,
+            "property_types": type_stats_cleaned,
+            "last_updated": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting listing stats: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 async def run_research_job(job_id: str, topic: str):
     start_time = time.time()
     logger.info(f"Starting research job | Job ID: {job_id}")
     
+    # Get job from MongoDB
+    job = await AnalysisJob.find_one(AnalysisJob.job_id == job_id)
+    if not job:
+        logger.error(f"Job {job_id} not found in database")
+        return
+    
     try:
         # Update status to running
-        job_store[job_id]["status"] = "running"
+        job.status = JobStatus.RUNNING
+        job.started_at = datetime.utcnow()
+        await job.save()
         logger.info(f"Research job status updated to running | Job ID: {job_id}")
         
         # Run the research crew
@@ -231,14 +449,20 @@ async def run_research_job(job_id: str, topic: str):
         logger.info(f"Research crew completed | Job ID: {job_id} | Duration: {duration:.2f}s | Result length: {len(str(result))} chars")
         
         # Update with results
-        job_store[job_id]["status"] = "completed"
-        job_store[job_id]["result"] = str(result)
+        job.status = JobStatus.COMPLETED
+        job.result_text = str(result)
+        job.completed_at = datetime.utcnow()
+        job.processing_time_seconds = duration
+        await job.save()
         
     except Exception as e:
         duration = time.time() - start_time
         logger.error(f"Research job failed | Job ID: {job_id} | Duration: {duration:.2f}s | Error: {str(e)}")
-        job_store[job_id]["status"] = "failed"
-        job_store[job_id]["error"] = str(e)
+        job.status = JobStatus.FAILED
+        job.error_message = str(e)
+        job.completed_at = datetime.utcnow()
+        job.processing_time_seconds = duration
+        await job.save()
 
 async def run_project_planning_job(job_id: str, project_description: str):
     start_time = time.time()
