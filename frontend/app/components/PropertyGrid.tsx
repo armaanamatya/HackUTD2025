@@ -1,8 +1,8 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { Bookmark, MapPin, Star, Bed, Bath, Square } from 'lucide-react'
-import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Bookmark, BookmarkCheck, MapPin, Star, Bed, Bath, Square } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
 import PropertyDetailPanel from './PropertyDetailPanel'
 
 interface Property {
@@ -31,9 +31,38 @@ interface PropertyGridProps {
 
 export default function PropertyGrid({ properties, filters }: PropertyGridProps) {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null)
+  const [activeTab, setActiveTab] = useState<'discover' | 'saved'>('discover')
+  const [bookmarked, setBookmarked] = useState<Record<string, boolean>>(() => {
+    if (typeof window !== 'undefined') {
+      return JSON.parse(localStorage.getItem('bookmarked-properties') || '{}')
+    }
+    return {}
+  })
+
+  // Sync bookmarked state with localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bookmarked-properties', JSON.stringify(bookmarked))
+    }
+  }, [bookmarked])
+
+  const toggleBookmark = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setBookmarked((prev) => {
+      const updated = {
+        ...prev,
+        [id]: !prev[id],
+      }
+      // If unbookmarking in saved tab, clear selection if it was the selected property
+      if (!updated[id] && selectedProperty?.id === id) {
+        setSelectedProperty(null)
+      }
+      return updated
+    })
+  }
 
   // Mock properties if none provided
-  const mockProperties: Property[] = properties.length > 0 ? properties : [
+  const mockProperties: Property[] = properties.length > 0 ? [] : [
     {
       id: '1',
       title: 'Modern Family Home',
@@ -168,19 +197,122 @@ export default function PropertyGrid({ properties, filters }: PropertyGridProps)
     },
   ]
 
-  const displayProperties = mockProperties.slice(0, 6) // Show exactly 6 properties
+  // Extend mock properties for scrolling demonstration
+  const allProperties = useMemo(() => {
+    if (properties.length > 0) return properties
+    const extendedProperties = [
+      ...mockProperties,
+      ...mockProperties.map((p, i) => ({ ...p, id: `${p.id}-dup-${i}` })),
+    ]
+    return extendedProperties
+  }, [properties, mockProperties])
+
+  // Filter saved properties
+  const savedProperties = useMemo(() => {
+    return allProperties.filter((p) => bookmarked[p.id])
+  }, [allProperties, bookmarked])
+
+  // Determine which properties to display based on active tab
+  const displayProperties = useMemo(() => {
+    return activeTab === 'saved' ? savedProperties : allProperties
+  }, [activeTab, savedProperties, allProperties])
+
+  // Update selected property when switching tabs to ensure it exists in current view
+  useEffect(() => {
+    if (activeTab === 'saved') {
+      if (selectedProperty && !bookmarked[selectedProperty.id]) {
+        setSelectedProperty(savedProperties[0] || null)
+      } else if (!selectedProperty && savedProperties.length > 0) {
+        setSelectedProperty(savedProperties[0])
+      }
+    }
+  }, [activeTab, bookmarked, selectedProperty, savedProperties])
 
   return (
-    <div className="flex-1 flex gap-6 overflow-hidden">
-      {/* Center: Property Grid (3x2) */}
-      <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-white font-cbre">Property Discovery</h2>
-          <p className="text-sm text-[#B7C4B8] mt-1">Found {displayProperties.length} properties matching your criteria</p>
+    <div className="flex-1 flex gap-6 overflow-hidden h-full">
+      {/* Center: Property Grid - Scrollable */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Fixed Header */}
+        <div className="flex-shrink-0 p-6 pb-4 border-b border-[#1E3028]">
+          <h2 className="text-2xl font-bold text-white font-cbre mb-4">Property Discovery</h2>
+          
+          {/* Tab Navigation */}
+          <div className="flex gap-2 mb-4">
+            <motion.button
+              onClick={() => setActiveTab('discover')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                activeTab === 'discover'
+                  ? 'bg-[#00A86B] text-white shadow-[0_0_10px_rgba(0,168,107,0.3)]'
+                  : 'bg-[#111513]/60 text-[#B7C4B8] hover:text-white hover:bg-[#111513]/80 border border-[#1E3028]'
+              }`}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Discover
+            </motion.button>
+            <motion.button
+              onClick={() => setActiveTab('saved')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all relative ${
+                activeTab === 'saved'
+                  ? 'bg-[#00A86B] text-white shadow-[0_0_10px_rgba(0,168,107,0.3)]'
+                  : 'bg-[#111513]/60 text-[#B7C4B8] hover:text-white hover:bg-[#111513]/80 border border-[#1E3028]'
+              }`}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Saved
+              {savedProperties.length > 0 && (
+                <span className="ml-2 px-1.5 py-0.5 rounded-full bg-white/20 text-xs">
+                  {savedProperties.length}
+                </span>
+              )}
+            </motion.button>
+          </div>
+          
+          <p className="text-sm text-[#B7C4B8]">
+            {activeTab === 'saved' 
+              ? `${savedProperties.length} saved ${savedProperties.length === 1 ? 'property' : 'properties'}`
+              : `Found ${displayProperties.length} properties matching your criteria`
+            }
+          </p>
         </div>
         
-        <div className="grid grid-cols-2 grid-rows-3 gap-6">
-          {displayProperties.map((property, index) => (
+        {/* Scrollable Property Cards */}
+        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+          {activeTab === 'saved' && savedProperties.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="flex flex-col items-center justify-center h-full text-center"
+            >
+              <div className="w-20 h-20 rounded-full bg-[#00A86B]/10 border border-[#00A86B]/20 flex items-center justify-center mb-4">
+                <Bookmark size={32} className="text-[#00A86B]" />
+              </div>
+              <h3 className="text-xl font-semibold text-white font-cbre mb-2">No saved properties yet</h3>
+              <p className="text-[#B7C4B8] max-w-md">
+                You haven't saved any properties yet. Start exploring and bookmark your favorites!
+              </p>
+              <motion.button
+                onClick={() => setActiveTab('discover')}
+                className="mt-6 px-6 py-3 rounded-lg bg-[#00A86B] text-white font-medium hover:bg-[#88C999] transition-colors shadow-[0_0_10px_rgba(0,168,107,0.3)]"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Explore Properties
+              </motion.button>
+            </motion.div>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="grid grid-cols-2 gap-6 auto-rows-max"
+              >
+                {displayProperties.map((property, index) => (
             <motion.div
               key={property.id}
               initial={{ opacity: 0, y: 20 }}
@@ -207,10 +339,33 @@ export default function PropertyGrid({ properties, filters }: PropertyGridProps)
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  className="absolute top-3 right-3 p-2 bg-[#111513]/95 backdrop-blur-sm rounded-full shadow-sm text-[#B7C4B8] hover:text-[#00A86B] transition-colors border border-[#1E3028]"
-                  onClick={(e) => e.stopPropagation()}
+                  className="absolute top-3 right-3 p-2 bg-[#111513]/95 backdrop-blur-sm rounded-full shadow-sm transition-colors border border-[#1E3028] group"
+                  onClick={(e) => toggleBookmark(property.id, e)}
+                  title={bookmarked[property.id] ? 'Remove bookmark' : 'Save property'}
                 >
-                  <Bookmark size={16} />
+                  <AnimatePresence mode="wait">
+                    {bookmarked[property.id] ? (
+                      <motion.div
+                        key="bookmarked"
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <BookmarkCheck size={16} className="text-[#00A86B]" fill="#00A86B" />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="not-bookmarked"
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Bookmark size={16} className="text-[#B7C4B8] group-hover:text-[#00A86B] transition-colors" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </motion.button>
               </div>
 
@@ -253,12 +408,21 @@ export default function PropertyGrid({ properties, filters }: PropertyGridProps)
                 </div>
               </div>
             </motion.div>
-          ))}
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          )}
         </div>
       </div>
 
-      {/* Right: Property Details + Map */}
-      <PropertyDetailPanel property={selectedProperty || displayProperties[0]} />
+      {/* Right: Property Details + Map - Fixed */}
+      <div className="w-[380px] flex-shrink-0 h-full overflow-hidden">
+        <PropertyDetailPanel 
+          property={selectedProperty || displayProperties[0]} 
+          allProperties={displayProperties}
+          selectedPropertyId={selectedProperty?.id}
+        />
+      </div>
     </div>
   )
 }
