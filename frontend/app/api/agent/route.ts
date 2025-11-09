@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export type IntentType = 'property_discovery' | 'predictive_analytics' | 'smart_search' | 'document_intelligence' | 'insight_summarizer'
+export type IntentType = 'property_discovery' | 'predictive_analytics' | 'chat' | 'document_intelligence' | 'insight_summarizer'
 
 // Enhanced intent classification
 function classifyIntent(query: string): IntentType {
@@ -78,8 +78,8 @@ function classifyIntent(query: string): IntentType {
     return 'insight_summarizer'
   }
   
-  // Default to smart search for conversational queries
-  return 'smart_search'
+  // Default to chat for general conversational queries
+  return 'chat'
 }
 
 export async function POST(request: NextRequest) {
@@ -294,17 +294,20 @@ export async function POST(request: NextRequest) {
         }
       }
     }
-    // Smart Search Response
-    else if (intent === 'smart_search') {
-      response.title = 'Smart Search'
+    // Chat Response - general conversational queries
+    else if (intent === 'chat') {
+      response.title = 'Chat'
       const lowerQuery = query.toLowerCase()
       
-      if (lowerQuery.includes('lease') && lowerQuery.includes('expir')) {
-        response.content = 'I found 3 leases expiring in Q2 2024:\n\n• Dallas Tower Lease - Expires June 30, 2025\n  Monthly Rent: $38,000\n  Status: Renewal option available\n\n• Plano HQ Lease - Expires March 15, 2026\n  Monthly Rent: $45,000\n  Status: Active, no immediate action needed\n\n• Austin Complex Lease - Expires September 30, 2024\n  Monthly Rent: $52,000\n  Status: Requires attention - expiring soon\n\nWould you like me to analyze renewal options or search for replacement properties?'
-      } else if (lowerQuery.includes('energy') || lowerQuery.includes('cost')) {
-        response.content = 'Energy cost analysis across your portfolio:\n\n• Total Energy Costs: $2.4M annually\n• Change from last quarter: -3.2% (improving)\n• Average cost per sqft: $0.85\n\nBreakdown by property:\n• Dallas Tower: $0.72/sqft (most efficient)\n• Plano HQ: $0.91/sqft (needs improvement)\n• Austin Complex: $0.78/sqft (good)\n\nRecommendation: Consider HVAC upgrades at Plano HQ to match Dallas Tower efficiency. Potential savings: $180K annually.'
+      // Generate contextual responses for general queries
+      if (lowerQuery.includes('what can you do') || lowerQuery.includes('what do you do') || lowerQuery.includes('help')) {
+        response.content = 'I\'m CURA, your AI real estate analyst. I can help you with:\n\n• Search and discover properties\n• Analyze trends and make predictions\n• Extract insights from documents\n• Provide comprehensive summaries\n• Answer questions about your portfolio\n\nWhat would you like to explore?'
+      } else if (lowerQuery.includes('tell me about') || lowerQuery.includes('explain')) {
+        response.content = `I'd be happy to help explain "${query}". Could you provide more context? For example:\n\n• Are you asking about a specific property?\n• Do you need analytics or predictions?\n• Are you looking for document insights?\n\nFeel free to ask me anything about real estate!`
+      } else if (lowerQuery.includes('market') || lowerQuery.includes('trends')) {
+        response.content = 'The real estate market is showing strong growth indicators. Would you like me to:\n\n• Analyze specific market trends?\n• Provide predictive analytics?\n• Show you property discoveries?\n\nJust ask, and I\'ll dive deeper into the data!'
       } else {
-        response.content = `I understand you're asking about "${query}". As your AI real estate analyst, I can help you:\n\n• Search and discover properties\n• Analyze trends and make predictions\n• Extract insights from documents\n• Provide comprehensive summaries\n\nWhat would you like to explore?`
+        response.content = `I understand you're asking about "${query}". As your AI real estate analyst, I can help you with property discovery, predictive analytics, document intelligence, and comprehensive insights. What specific information are you looking for?`
       }
     }
     // Document Intelligence Response

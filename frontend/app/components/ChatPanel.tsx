@@ -1,16 +1,18 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Mic, Paperclip, X } from 'lucide-react'
+import { Send, Mic, Paperclip, X, ChevronLeft } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { useChatStore } from '../stores/chatStore'
 
 interface ChatPanelProps {
   onSendMessage: (message: string) => void
   isProcessing?: boolean
+  isExpanded?: boolean
+  onToggleExpand?: () => void
 }
 
-export default function ChatPanel({ onSendMessage, isProcessing }: ChatPanelProps) {
+export default function ChatPanel({ onSendMessage, isProcessing, isExpanded = false, onToggleExpand }: ChatPanelProps) {
   const [input, setInput] = useState('')
   const { messages, addMessage, clearChat, isProcessing: storeIsProcessing, setIsProcessing } = useChatStore()
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -33,11 +35,16 @@ export default function ChatPanel({ onSendMessage, isProcessing }: ChatPanelProp
   return (
     <motion.div
       initial={{ x: -20, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      className="w-[380px] flex-shrink-0 bg-[#111513]/60 backdrop-blur-xl border-r border-[#1E3028] flex flex-col h-full"
+      animate={{ 
+        x: 0, 
+        opacity: 1,
+        width: isExpanded ? "100%" : "420px"
+      }}
+      transition={{ duration: 0.4, ease: "easeInOut" }}
+      className={`${isExpanded ? 'absolute inset-0 z-50' : 'flex-shrink-0'} bg-[#0d0f0e] h-full border ${isExpanded ? 'border-green-900/20 rounded-xl' : 'border-r border-[#1E3028] rounded-l-xl'} shadow-lg overflow-hidden flex flex-col`}
     >
       {/* Header */}
-      <div className="p-6 border-b border-[#1E3028]">
+      <div className="p-6 border-b border-[#1E3028] flex-shrink-0">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
             <motion.div
@@ -64,20 +71,31 @@ export default function ChatPanel({ onSendMessage, isProcessing }: ChatPanelProp
               <p className="text-xs text-[#B7C4B8]">Always here to help</p>
             </div>
           </div>
-          {messages.length > 0 && (
-            <button
-              onClick={clearChat}
-              className="p-1.5 rounded-md text-[#B7C4B8] hover:text-[#00A86B] hover:bg-[#00A86B]/10 transition-colors"
-              title="Clear chat"
-            >
-              <X size={16} />
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {isExpanded && onToggleExpand && (
+              <button
+                onClick={onToggleExpand}
+                className="p-1.5 rounded-md text-[#B7C4B8] hover:text-[#00A86B] hover:bg-[#00A86B]/10 transition-colors"
+                title="Collapse chat"
+              >
+                <ChevronLeft size={16} />
+              </button>
+            )}
+            {messages.length > 0 && (
+              <button
+                onClick={clearChat}
+                className="p-1.5 rounded-md text-[#B7C4B8] hover:text-[#00A86B] hover:bg-[#00A86B]/10 transition-colors"
+                title="Clear chat"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+      <div className={`flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar ${isExpanded ? 'max-w-4xl mx-auto w-full' : ''}`}>
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-[#B7C4B8] text-sm italic">No conversations yet. Start chatting to begin!</p>
@@ -97,7 +115,7 @@ export default function ChatPanel({ onSendMessage, isProcessing }: ChatPanelProp
                   {message.role === 'user' ? 'You' : 'CURA'} — {message.timestamp}
                 </span>
                 <div
-                  className={`max-w-[85%] rounded-xl px-4 py-3 transition-all hover:shadow-[0_0_10px_rgba(0,168,107,0.15)] ${
+                  className={`${isExpanded ? 'max-w-3xl' : 'max-w-[85%]'} rounded-xl px-4 py-3 transition-all hover:shadow-[0_0_10px_rgba(0,168,107,0.15)] ${
                     message.role === 'user'
                       ? 'bg-[#1C1F1D] text-white'
                       : 'bg-[#00A86B]/10 border border-[#00A86B]/20 text-[#C9E3D5]'
@@ -141,7 +159,7 @@ export default function ChatPanel({ onSendMessage, isProcessing }: ChatPanelProp
       </div>
 
       {/* Input Bar */}
-      <div className="p-4 border-t border-[#1E3028] bg-[#111513]/40">
+      <div className={`p-4 border-t border-[#1E3028] bg-[#111513]/40 flex-shrink-0 ${isExpanded ? 'max-w-4xl mx-auto w-full' : ''}`}>
         <div className="flex items-center gap-2">
           <div className="flex-1 relative">
             <input

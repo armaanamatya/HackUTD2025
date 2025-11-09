@@ -37,9 +37,20 @@ export default function Home() {
   const [responseData, setResponseData] = useState<any>(null)
   const [currentJob, setCurrentJob] = useState<JobResponse | null>(null)
   const [crewaiResponse, setCrewaiResponse] = useState<string>('')
+  const [isExpanded, setIsExpanded] = useState(false) // Chat expansion state
   
   // Get chat store functions
-  const { addMessage, setIsProcessing: setStoreProcessing } = useChatStore()
+  const { messages, addMessage, setIsProcessing: setStoreProcessing } = useChatStore()
+
+  // Determine response type and route accordingly
+  const determineResponseType = (responseType: string): 'chat' | 'structured' => {
+    // If response type is "chat", it's a general conversational query
+    if (responseType === 'chat') {
+      return 'chat'
+    }
+    // All other types (property, analytics, document, insights) are structured
+    return 'structured'
+  }
 
   // Reset processing state when returning to home
   useEffect(() => {
@@ -53,13 +64,18 @@ export default function Home() {
     }
   }, [viewMode, setStoreProcessing])
 
-  const handleSearch = async (searchQuery?: string, force: boolean = false) => {
+  const handleSearch = async (searchQuery?: string, force: boolean = false, skipUserMessage: boolean = false) => {
     const finalQuery = searchQuery || query
     if (!finalQuery.trim()) return
     // Allow force to bypass isProcessing check (for quick actions)
     if (!force && isProcessing) {
       console.log('Search blocked: operation already in progress')
       return
+    }
+
+    // Add user message optimistically (immediately) unless skipped
+    if (!skipUserMessage) {
+      addMessage('user', finalQuery)
     }
 
     setIsProcessing(true)
@@ -74,25 +90,36 @@ export default function Home() {
 
       const data = await response.json()
 
+      // Determine response type and route accordingly
+      const responseCategory = determineResponseType(data.type)
+
       // Map API response type to view mode
       const modeMap: Record<string, ViewMode> = {
         'property_discovery': 'property',
         'predictive_analytics': 'analytics',
         'document_intelligence': 'document',
         'insight_summarizer': 'insights',
+        'chat': 'chat',
       }
 
-      // Add assistant response to chat store
-      if (data.content || data.type === 'smart_search') {
-        const responseText = data.content || `I've processed your request and updated the ${data.type || 'results'} view.`
-        addMessage('assistant', responseText)
+      // Route based on response type
+      if (responseCategory === 'chat') {
+        // Expand chat for general conversational queries
+        setIsExpanded(true)
+        setViewMode('chat')
+        // Add assistant response to chat
+        if (data.content) {
+          addMessage('assistant', data.content)
+        }
       } else {
-        // For structured responses, add a contextual message
+        // Collapse chat and show structured view for property/analytics/document/insights
+        setIsExpanded(false)
+        setViewMode(modeMap[data.type] || 'home')
+        // Add contextual message to chat
         const responseText = `I've analyzed your query and prepared the ${modeMap[data.type] || 'results'} view for you.`
         addMessage('assistant', responseText)
       }
 
-      setViewMode(modeMap[data.type] || 'home')
       setResponseData(data)
       setQuery('')
     } catch (error) {
@@ -129,7 +156,13 @@ export default function Home() {
   }
 
   const handleCrewAIQuery = async (query: string) => {
+    // For CrewAI queries, treat them as general chat queries
+    // Add user message optimistically
+    addMessage('user', query)
+    
     setIsProcessing(true)
+    setStoreProcessing(true)
+    setIsExpanded(true) // Expand chat for CrewAI queries
     setViewMode('chat')
     
     try {
@@ -149,26 +182,30 @@ export default function Home() {
         }
       )
       
-      // Set the final result
-      setCrewaiResponse(completedJob.result || 'Request completed successfully')
+      // Set the final result and add to chat
+      const result = completedJob.result || 'Request completed successfully'
+      setCrewaiResponse(result)
       setCurrentJob(completedJob)
+      addMessage('assistant', result)
       
     } catch (error) {
       console.error('CrewAI Error:', error)
-      setCrewaiResponse(`Error: ${error instanceof Error ? error.message : 'Something went wrong'}`)
+      const errorMsg = `Error: ${error instanceof Error ? error.message : 'Something went wrong'}`
+      setCrewaiResponse(errorMsg)
+      addMessage('assistant', errorMsg)
     } finally {
       setIsProcessing(false)
+      setStoreProcessing(false)
     }
   }
 
   const handleChatMessage = async (message: string) => {
-    // Route ALL requests to CrewAI
-    log.info('Processing chat message - routing to CrewAI', {
-      messageLength: message.length
-    })
+    // Add user message optimistically (immediately)
+    addMessage('user', message)
     
-    // Always route to CrewAI
-    await handleCrewAIQuery(message)
+    // Route to handleSearch which will determine the response type
+    // Skip adding user message since we already added it
+    await handleSearch(message, true, true)
   }
 
   const handleDocumentUpload = async (file: File) => {
@@ -257,36 +294,12 @@ export default function Home() {
           />
         )
       case 'chat':
-        // For chat view, show either CrewAI response or regular agent response
-        const chatContent = crewaiResponse || responseData?.content || ''
-        return (
-          <div className="p-6">
-            <div className="max-w-4xl mx-auto">
-              {currentJob && (
-                <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-blue-800">
-                      Job Status: {currentJob.status}
-                    </span>
-                    <span className="text-xs text-blue-600">
-                      ID: {currentJob.job_id}
-                    </span>
-                  </div>
-                  {currentJob.status === 'running' && (
-                    <div className="mt-2">
-                      <div className="w-full bg-blue-200 rounded-full h-2">
-                        <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-              <ChatResponse content={chatContent} />
-            </div>
-          </div>
-        )
+        // For chat view, the chat panel is expanded and handles the UI
+        // This content area is hidden when chat is expanded, so this won't render
+        // But we keep it for safety
+        return null
       default:
-        return <HomeView onQuickAction={handleQuickAction} onCrewAIQuery={handleCrewAIQuery} onDocumentUpload={handleDocumentUpload} isProcessing={isProcessing} />
+        return <HomeView onQuickAction={handleQuickAction} onCrewAIQuery={handleCrewAIQuery} onDocumentUpload={handleDocumentUpload} isProcessing={isProcessing} onSearch={handleSearch} />
     }
   }
 
@@ -339,27 +352,47 @@ export default function Home() {
 
 
       {/* Main Content Area with Persistent Chat Panel */}
-      <div className="flex-1 overflow-hidden relative flex">
+      <div className={`flex-1 overflow-hidden relative ${isExpanded && viewMode !== 'home' ? '' : 'flex'}`}>
         {/* Left: Persistent Chat Panel - Show on all pages except home */}
         {viewMode !== 'home' && (
-          <ChatPanel onSendMessage={(message) => handleChatMessage(message)} isProcessing={isProcessing} />
+          <ChatPanel 
+            onSendMessage={(message) => handleChatMessage(message)} 
+            isProcessing={isProcessing}
+            isExpanded={isExpanded}
+            onToggleExpand={() => {
+              setIsExpanded(!isExpanded)
+              // If collapsing and we're in chat view, switch to home
+              if (isExpanded && viewMode === 'chat') {
+                setViewMode('home')
+              }
+            }}
+          />
         )}
 
-        {/* Right: Main Content */}
-        <div className="flex-1 overflow-hidden relative">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={viewMode}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.3 }}
-              className="h-full w-full"
-            >
-              {renderContent()}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+        {/* Right: Main Content - Hide when chat is expanded */}
+        {!isExpanded && viewMode !== 'home' && (
+          <div className="flex-1 overflow-hidden relative">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={viewMode}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="h-full w-full"
+              >
+                {renderContent()}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        )}
+        
+        {/* Show home view when chat is not expanded and viewMode is home */}
+        {!isExpanded && viewMode === 'home' && (
+          <div className="flex-1 overflow-hidden relative">
+            {renderContent()}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -369,12 +402,14 @@ function HomeView({
   onQuickAction, 
   onCrewAIQuery,
   onDocumentUpload,
-  isProcessing 
+  isProcessing,
+  onSearch
 }: { 
   onQuickAction: (action: string, category?: 'insights' | 'trends' | 'contracts' | 'documents') => void
   onCrewAIQuery: (query: string, files?: any[]) => Promise<void>
   onDocumentUpload: (file: File) => void
   isProcessing: boolean
+  onSearch: (query: string, force?: boolean) => Promise<void>
 }) {
   const handlePromptSelect = (prompt: string, category: 'insights' | 'trends' | 'contracts' | 'documents') => {
     onQuickAction(prompt, category)
@@ -382,15 +417,15 @@ function HomeView({
 
   const handleInputSubmit = async (message: string, files?: any[]) => {
     if (message.trim() || (files && files.length > 0)) {
-      // Route ALL requests to CrewAI
-      log.info('Home input submitted - routing to CrewAI', {
+      // Route queries through handleSearch which will determine response type and route accordingly
+      log.info('Home input submitted - routing through handleSearch', {
         messageLength: message.length,
         hasFiles: !!(files && files.length > 0),
         fileCount: files?.length || 0
       })
       
-      // Always route to CrewAI
-      await onCrewAIQuery(message, files)
+      // Route through handleSearch for proper type detection and routing
+      await onSearch(message, true)
     }
   }
 
