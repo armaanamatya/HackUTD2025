@@ -1,4 +1,5 @@
 import os
+import requests
 from crewai import LLM
 from dotenv import load_dotenv
 
@@ -18,6 +19,11 @@ class LLMConfig:
         elif self.provider == "gemini":
             return self._get_gemini_llm()
         elif self.provider == "local":
+            # Automatic fallback: if local endpoint is unreachable, use Gemini
+            if not self._local_endpoint_available():
+                gem_llm = self._maybe_get_gemini_fallback()
+                if gem_llm is not None:
+                    return gem_llm
             return self._get_local_llm()
         else:
             raise ValueError(f"Unsupported LLM provider: {self.provider}")
@@ -50,7 +56,7 @@ class LLMConfig:
             raise ValueError("GEMINI_API_KEY not found in environment variables")
         
         return LLM(
-            model="gemini-2.0-flash-exp",
+            model="gemini-flash-latest",
             api_key=api_key,
             temperature=0.7,
         )
@@ -58,10 +64,56 @@ class LLMConfig:
     def _get_local_llm(self) -> LLM:
         base_url = os.getenv("LOCAL_BASE_URL", "http://localhost:8000/v1")
         model = os.getenv("LOCAL_MODEL", "local-model")
+        api_key = os.getenv("OPENAI_API_KEY", "sk-no-key-required")
         
         return LLM(
             model=f"openai/{model}",
             base_url=base_url,
+            temperature=0.7,
+            api_key=api_key,
+        )
+
+    def _local_endpoint_available(self) -> bool:
+        """Check if the local OpenAI-compatible endpoint is reachable and usable.
+        We first GET /models, then attempt a minimal POST to /chat/completions.
+        """
+        base_url = os.getenv("LOCAL_BASE_URL", "http://localhost:8000/v1")
+        model = os.getenv("LOCAL_MODEL", "local-model")
+        try:
+            # Quick reachability check
+            resp = requests.get(f"{base_url}/models", timeout=3)
+            if resp.status_code != 200:
+                return False
+
+            # Minimal completion probe to catch auth/model issues early
+            headers = {
+                "Content-Type": "application/json",
+            }
+            api_key = os.getenv("OPENAI_API_KEY", "sk-no-key-required")
+            if api_key:
+                headers["Authorization"] = f"Bearer {api_key}"
+
+            data = {
+                "model": model,
+                "messages": [
+                    {"role": "user", "content": "ping"}
+                ],
+                "max_tokens": 5,
+                "temperature": 0.0,
+            }
+            comp = requests.post(f"{base_url}/chat/completions", json=data, headers=headers, timeout=3)
+            return comp.status_code == 200
+        except Exception:
+            return False
+
+    def _maybe_get_gemini_fallback(self) -> LLM | None:
+        """Return a Gemini LLM if GEMINI_API_KEY is configured; otherwise None."""
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            return None
+        return LLM(
+            model="gemini-flash-latest",
+            api_key=api_key,
             temperature=0.7,
         )
     
@@ -70,7 +122,7 @@ class LLMConfig:
             return {
                 "provider": self.provider,
                 "debug": self.debug,
-                "model": "gemini-2.0-flash-exp",
+                "model": "gemini-flash-latest",
                 "api_key_set": bool(os.getenv("GEMINI_API_KEY")),
             }
         elif self.provider == "local":
@@ -79,6 +131,7 @@ class LLMConfig:
                 "debug": self.debug,
                 "model": os.getenv("LOCAL_MODEL"),
                 "base_url": os.getenv("LOCAL_BASE_URL"),
+                "fallback_to_gemini": self._local_endpoint_available() is False and bool(os.getenv("GEMINI_API_KEY")),
             }
         else:
             return {

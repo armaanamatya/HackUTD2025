@@ -28,15 +28,14 @@ def test_gemini_models():
             print(f"[ERROR] Could not list models: {e}")
             
         # Test different model names
+        # Prefer current stable text models; older variants may be deprecated
         test_models = [
-            "gemini-2.0-flash-exp",
-            "models/gemini-2.0-flash-exp",
-            "gemini-exp-1114",
-            "models/gemini-exp-1114",
-            "gemini-1.5-flash-8b",
-            "models/gemini-1.5-flash-8b",
-            "gemini-1.5-flash-002",
-            "models/gemini-1.5-flash-002"
+            "gemini-flash-latest",
+            "models/gemini-flash-latest",
+            "gemini-flash-lite-latest",
+            "models/gemini-flash-lite-latest",
+            "gemini-2.5-pro",
+            "models/gemini-2.5-pro",
         ]
         
         print("\n[INFO] Testing model access:")

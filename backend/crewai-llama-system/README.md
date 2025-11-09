@@ -6,7 +6,7 @@ A modern multi-agent system built with CrewAI framework and powered by Llama 3.1
 
 - **Multi-Agent Workflows**: Research, Code Analysis, and Project Planning crews
 - **Local LLM Integration**: Supports both Ollama and vLLM deployments
-- **Flexible Configuration**: Easy switching between different LLM providers
+- **Flexible Configuration**: Easy switching between LLM providers with automatic Gemini fallback when local endpoints fail
 - **Custom Tools**: Web search, file operations, and code analysis tools
 - **Production Ready**: Modern Python project structure with proper dependency management
 
@@ -45,7 +45,7 @@ LLM_PROVIDER=vllm
 VLLM_BASE_URL=http://localhost:8000/v1
 VLLM_MODEL=meta-llama/Llama-3.1-8B-Instruct
 
-# Or for a local OpenAI-compatible endpoint
+# Or for a local OpenAI-compatible endpoint (auto-fallback to Gemini if unreachable)
 LLM_PROVIDER=local
 LOCAL_BASE_URL=http://localhost:8000/v1
 LOCAL_MODEL=mistralai/mistral-nemo-instruct-2407
@@ -70,7 +70,7 @@ vllm serve meta-llama/Llama-3.1-8B-Instruct --host 0.0.0.0 --port 8000
 #### Option C: Any OpenAI-Compatible Server
 - Point `LOCAL_BASE_URL` to your server (e.g., `http://localhost:8000/v1`).
 - Set `LOCAL_MODEL` to the model name your server exposes.
-- Use a dummy `OPENAI_API_KEY` (`sk-no-key-required`) if your client requires one.
+- Use a dummy `OPENAI_API_KEY` (`sk-no-key-required`) if your client requires one. If the local endpoint is unreachable or unusable, the system falls back to Gemini `gemini-flash-latest` automatically (requires `GEMINI_API_KEY`).
 
 ## Usage
 
