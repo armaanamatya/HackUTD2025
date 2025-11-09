@@ -17,7 +17,6 @@ ollama
 
 # Search tools
 tavily-python
-duckduckgo-search
 
 # Additional dependencies for current implementation
 google-generativeai

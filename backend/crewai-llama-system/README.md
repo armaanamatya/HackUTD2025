@@ -147,10 +147,9 @@ crewai-llama-system/
 - **Tools**: Web search, file operations
 
 #### Web Research Tools
-- `duckduckgo_search`: zero-config web search, no API key required.
-- `tavily`: high-quality search (requires `TAVILY_API_KEY`).
-- `perplexity`: conversational search (requires `PERPLEXITY_API_KEY`).
-- `fetch_web_page`: fetches and extracts readable content from a URL.
+ - `tavily`: high-quality search (requires `TAVILY_API_KEY`).
+ - `perplexity`: conversational search (requires `PERPLEXITY_API_KEY`).
+ - `fetch_web_page`: fetches and extracts readable content from a URL.
 
 Usage tips:
 - Search first to find sources, then call `fetch_web_page` to read content.
@@ -232,4 +231,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [Meta AI](https://ai.meta.com/) - Llama 3.1 model
 - [Ollama](https://ollama.ai/) - Easy local LLM deployment
 - [vLLM](https://github.com/vllm-project/vllm) - High-performance LLM serving
-- [DuckDuckGo Search](https://pypi.org/project/duckduckgo-search/) - Zero-config web search

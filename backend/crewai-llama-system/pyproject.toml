@@ -16,7 +16,6 @@ dependencies = [
     "requests",
     "langchain-community",
     "ollama",
-    "duckduckgo-search",
 ]
 
 [project.optional-dependencies]
