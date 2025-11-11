@@ -14,6 +14,8 @@ Winner of [HackUTD](https://devpost.com/software/tbd-58ftpr) 2025
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/atlas)
 [![Uvicorn](https://img.shields.io/badge/Uvicorn-0.38-3C3C3C?logo=python&logoColor=white)](https://www.uvicorn.org/)
 
+</div>
+
 Cura is a commercial real estate intelligence platform that delivers forecasting, analytical insights, pros and cons analysis, and market sentiment. It helps users evaluate opportunities, assess risks, and understand how properties align with their financial goals through data-driven comparisons and real-time trends. Real estate should be open, simple, and accessible to everyone—agentic analytics turn market data into actionable insight.
 
 ## Features
