@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bookmark, BookmarkCheck, MapPin, Star, Bed, Bath, Square } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
-import PropertyDetailPanel from './PropertyDetailPanel'
+import PropertyDetailPanel from '../features/property/PropertyDetailPanel'
 
 interface Property {
   id: string

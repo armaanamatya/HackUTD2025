@@ -1,25 +1,6 @@
 // Service for interacting with the CrewAI FastAPI backend
+import { logger } from './logger'
 const CREWAI_API_BASE = process.env.NEXT_PUBLIC_CREWAI_API_URL || 'http://localhost:8000'
-
-// Logging utility
-const log = {
-  info: (message: string, data?: any) => {
-    const timestamp = new Date().toISOString()
-    console.log(`[FRONTEND-CREWAI] ${timestamp} | INFO | ${message}`, data || '')
-  },
-  error: (message: string, error?: any) => {
-    const timestamp = new Date().toISOString()
-    console.error(`[FRONTEND-CREWAI] ${timestamp} | ERROR | ${message}`, error || '')
-  },
-  request: (method: string, url: string, data?: any) => {
-    const timestamp = new Date().toISOString()
-    console.log(`[FRONTEND-CREWAI] ${timestamp} | REQUEST | ${method} ${url}`, data ? { payload: data } : '')
-  },
-  response: (method: string, url: string, status: number, data?: any) => {
-    const timestamp = new Date().toISOString()
-    console.log(`[FRONTEND-CREWAI] ${timestamp} | RESPONSE | ${method} ${url} | Status: ${status}`, data || '')
-  }
-}
 
 export interface ResearchRequest {
   topic: string
@@ -71,7 +52,7 @@ class CrewAIService {
         requestData = { body: 'Binary or non-JSON data' }
       }
     }
-    log.request(method, endpoint, requestData)
+    logger.request(method, endpoint, requestData)
     
     try {
       const response = await fetch(url, {
@@ -86,20 +67,20 @@ class CrewAIService {
       const responseData = await response.json()
       
       // Log response
-      log.response(method, endpoint, response.status, { 
+      logger.response(method, endpoint, response.status, { 
         duration: `${duration.toFixed(2)}ms`,
         dataSize: JSON.stringify(responseData).length + ' chars'
       })
       
       if (!response.ok) {
-        log.error(`API Error: ${response.status} ${response.statusText}`, responseData)
+        logger.error(`API Error: ${response.status} ${response.statusText}`, responseData)
         throw new Error(`API Error: ${response.status} ${response.statusText}`)
       }
       
       return responseData
     } catch (error) {
       const duration = performance.now() - startTime
-      log.error(`Request failed after ${duration.toFixed(2)}ms`, error)
+      logger.error(`Request failed after ${duration.toFixed(2)}ms`, error)
       throw error
     }
   }
@@ -109,7 +90,7 @@ class CrewAIService {
   }
 
   async startResearchJob(topic: string): Promise<JobResponse> {
-    log.info('Starting research job', { topic: topic.substring(0, 100) + '...' })
+    logger.info('Starting research job', { topic: topic.substring(0, 100) + '...' })
     return this.makeRequest<JobResponse>('/research', {
       method: 'POST',
       body: JSON.stringify({ topic }),
@@ -117,7 +98,7 @@ class CrewAIService {
   }
 
   async startProjectPlanningJob(projectDescription: string): Promise<JobResponse> {
-    log.info('Starting project planning job', { projectDescription: projectDescription.substring(0, 100) + '...' })
+    logger.info('Starting project planning job', { projectDescription: projectDescription.substring(0, 100) + '...' })
     return this.makeRequest<JobResponse>('/project-planning', {
       method: 'POST',
       body: JSON.stringify({ project_description: projectDescription }),
@@ -125,7 +106,7 @@ class CrewAIService {
   }
 
   async startResearchJobWithFiles(topic: string, files: FileContext[]): Promise<JobResponse> {
-    log.info('Starting research job with files', { 
+    logger.info('Starting research job with files', { 
       topic: topic.substring(0, 100) + '...', 
       fileCount: files.length,
       fileNames: files.map(f => f.fileName)
@@ -137,7 +118,7 @@ class CrewAIService {
   }
 
   async startProjectPlanningJobWithFiles(projectDescription: string, files: FileContext[]): Promise<JobResponse> {
-    log.info('Starting project planning job with files', { 
+    logger.info('Starting project planning job with files', { 
       projectDescription: projectDescription.substring(0, 100) + '...', 
       fileCount: files.length,
       fileNames: files.map(f => f.fileName)
@@ -150,7 +131,7 @@ class CrewAIService {
 
   // Helper function to convert uploaded files to file context
   async processUploadedFiles(uploadedFiles: any[]): Promise<FileContext[]> {
-    log.info('Starting file processing', { 
+    logger.info('Starting file processing', { 
       fileCount: uploadedFiles.length,
       files: uploadedFiles.map(f => ({ name: f.file.name, size: f.file.size, type: f.file.type }))
     })
@@ -161,7 +142,7 @@ class CrewAIService {
       const uploadedFile = uploadedFiles[i]
       const startTime = performance.now()
       
-      log.info(`Processing file ${i + 1}/${uploadedFiles.length}`, {
+      logger.info(`Processing file ${i + 1}/${uploadedFiles.length}`, {
         fileName: uploadedFile.file.name,
         fileSize: uploadedFile.file.size,
         fileType: uploadedFile.file.type
@@ -181,7 +162,7 @@ class CrewAIService {
         
         if (response.ok) {
           const result = await response.json()
-          log.info(`File processed successfully`, {
+          logger.info(`File processed successfully`, {
             fileName: uploadedFile.file.name,
             duration: `${duration.toFixed(2)}ms`,
             extractedTextLength: result.aiSummary?.length || 0,
@@ -198,7 +179,7 @@ class CrewAIService {
             clauses: result.clauses
           })
         } else {
-          log.error(`File processing failed`, {
+          logger.error(`File processing failed`, {
             fileName: uploadedFile.file.name,
             duration: `${duration.toFixed(2)}ms`,
             status: response.status,
@@ -214,7 +195,7 @@ class CrewAIService {
         }
       } catch (error) {
         const duration = performance.now() - startTime
-        log.error(`File processing error`, {
+        logger.error(`File processing error`, {
           fileName: uploadedFile.file.name,
           duration: `${duration.toFixed(2)}ms`,
           error: error
@@ -229,7 +210,7 @@ class CrewAIService {
       }
     }
     
-    log.info('File processing complete', {
+    logger.info('File processing complete', {
       totalFiles: uploadedFiles.length,
       successfulFiles: fileContexts.filter(f => !f.content.includes('Processing failed')).length,
       failedFiles: fileContexts.filter(f => f.content.includes('Processing failed')).length
@@ -240,8 +221,8 @@ class CrewAIService {
 
   async getJobStatus(jobId: string): Promise<JobResponse> {
     // Only log occasionally to avoid spam during polling
-    if (Math.random() < 0.1) { // Log ~10% of status checks
-      log.info('Checking job status', { jobId })
+    if (Math.random() < 0.1) {
+      logger.info('Checking job status', { jobId })
     }
     return this.makeRequest<JobResponse>(`/jobs/${jobId}`)
   }
@@ -313,7 +294,7 @@ class CrewAIService {
     const jobType = this.determineJobType(query)
     const hasFiles = uploadedFiles && uploadedFiles.length > 0
     
-    log.info('Starting unified job', {
+    logger.info('Starting unified job', {
       jobType,
       hasFiles,
       fileCount: hasFiles ? uploadedFiles!.length : 0,

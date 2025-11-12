@@ -9,9 +9,9 @@ if __name__ == "__main__":
     print("Press Ctrl+C to stop")
     
     uvicorn.run(
-        "api_server:app", 
-        host="0.0.0.0", 
+        "app.main:app",
+        host="0.0.0.0",
         port=8000,
-        reload=False,  # Disabled due to Python 3.13 compatibility issue with watchfiles
+        reload=False,
         log_level="info"
     )

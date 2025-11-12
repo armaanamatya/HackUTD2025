@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { logger } from '../services/logger'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FileText, Calendar, DollarSign, AlertCircle, CheckCircle, Shield, Upload, X, Sparkles } from 'lucide-react'
 
@@ -163,7 +164,7 @@ export default function DocumentInsights(props: DocumentInsightsProps) {
 
       setDocuments(prev => [...prev, newDocument])
     } catch (error) {
-      console.error('Error uploading document:', error)
+      logger.error('Error uploading document:', error)
       alert(error instanceof Error ? error.message : 'Failed to upload document')
     } finally {
       setIsLoading(false)

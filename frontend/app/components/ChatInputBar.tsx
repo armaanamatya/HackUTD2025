@@ -3,18 +3,9 @@
 import { motion } from 'framer-motion'
 import { useState, useRef, KeyboardEvent } from 'react'
 import { Send, Paperclip, X, FileText } from 'lucide-react'
+import { logger } from '../services/logger'
 
-// Logging utility
-const log = {
-  info: (message: string, data?: any) => {
-    const timestamp = new Date().toISOString()
-    console.log(`[FRONTEND-CHAT] ${timestamp} | INFO | ${message}`, data || '')
-  },
-  error: (message: string, error?: any) => {
-    const timestamp = new Date().toISOString()
-    console.error(`[FRONTEND-CHAT] ${timestamp} | ERROR | ${message}`, error || '')
-  }
-}
+// Use centralized logger
 
 interface UploadedFile {
   file: File
@@ -47,7 +38,7 @@ export default function ChatInputBar({
     if (!inputValue.trim() && uploadedFiles.length === 0) return
     if (isLoading) return
 
-    log.info('Sending message', {
+    logger.info('Sending message', {
       messageLength: inputValue.length,
       fileCount: uploadedFiles.length,
       fileNames: uploadedFiles.map(f => f.file.name),
@@ -71,7 +62,7 @@ export default function ChatInputBar({
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
     if (files) {
-      log.info('Files selected via input', {
+      logger.info('Files selected via input', {
         fileCount: files.length,
         files: Array.from(files).map(f => ({ name: f.name, size: f.size, type: f.type }))
       })
@@ -80,7 +71,7 @@ export default function ChatInputBar({
   }
 
   const handleFilesAdded = async (files: File[]) => {
-    log.info('Processing uploaded files', {
+    logger.info('Processing uploaded files', {
       totalFiles: files.length,
       files: files.map(f => ({ name: f.name, size: f.size, type: f.type }))
     })
@@ -94,16 +85,16 @@ export default function ChatInputBar({
       const isValidSize = file.size <= maxSize
       
       if (!isValidType) {
-        log.error('Invalid file type rejected', { fileName: file.name, fileType: file.type })
+        logger.error('Invalid file type rejected', { fileName: file.name, fileType: file.type })
       }
       if (!isValidSize) {
-        log.error('File too large rejected', { fileName: file.name, fileSize: file.size, maxSize })
+        logger.error('File too large rejected', { fileName: file.name, fileSize: file.size, maxSize })
       }
       
       return isValidType && isValidSize
     })
     
-    log.info('File validation complete', {
+    logger.info('File validation complete', {
       totalFiles: files.length,
       validFiles: validFiles.length,
       rejectedFiles: files.length - validFiles.length
@@ -117,9 +108,9 @@ export default function ChatInputBar({
       if (file.type.startsWith('image/')) {
         try {
           preview = URL.createObjectURL(file)
-          log.info('Generated preview for image', { fileName: file.name })
+          logger.info('Generated preview for image', { fileName: file.name })
         } catch (error) {
-          log.error('Failed to generate preview', { fileName: file.name, error })
+          logger.error('Failed to generate preview', { fileName: file.name, error })
         }
       }
       
@@ -128,7 +119,7 @@ export default function ChatInputBar({
 
     setUploadedFiles(prev => {
       const updated = [...prev, ...newUploadedFiles]
-      log.info('Updated file list', {
+      logger.info('Updated file list', {
         previousCount: prev.length,
         newCount: updated.length,
         addedFiles: newUploadedFiles.map(f => f.file.name)
@@ -147,13 +138,13 @@ export default function ChatInputBar({
     setUploadedFiles(prev => {
       const fileToRemove = prev.find(f => f.id === id)
       if (fileToRemove) {
-        log.info('Removing file', { fileName: fileToRemove.file.name, fileId: id })
+        logger.info('Removing file', { fileName: fileToRemove.file.name, fileId: id })
         if (fileToRemove.preview) {
           URL.revokeObjectURL(fileToRemove.preview)
         }
       }
       const updated = prev.filter(f => f.id !== id)
-      log.info('File list updated after removal', {
+      logger.info('File list updated after removal', {
         previousCount: prev.length,
         newCount: updated.length
       })
@@ -177,7 +168,7 @@ export default function ChatInputBar({
     setDragActive(false)
     
     if (e.dataTransfer.files) {
-      log.info('Files dropped', {
+      logger.info('Files dropped', {
         fileCount: e.dataTransfer.files.length,
         files: Array.from(e.dataTransfer.files).map(f => ({ name: f.name, size: f.size, type: f.type }))
       })

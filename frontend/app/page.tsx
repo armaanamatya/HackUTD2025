@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Zap, Sparkles, Search, Upload, FileText, X } from 'lucide-react'
 import ChatPanel from './components/ChatPanel'
 import PropertyDiscovery from './components/PropertyDiscovery'
-import PredictiveAnalytics from './components/PredictiveAnalytics'
+import PredictiveAnalytics from './features/analytics/PredictiveAnalytics'
 import { useChatStore } from './stores/chatStore'
 import DocumentInsights from './components/DocumentInsights'
 import InsightSummaryDashboard from './components/InsightSummaryDashboard'
@@ -15,18 +15,9 @@ import ChatInputBar from './components/ChatInputBar'
 import ChatResponse from './components/ChatResponse'
 import { AgentCard } from './types'
 import { crewaiService, JobResponse } from './services/crewaiService'
+import { logger } from './services/logger'
 
-// Logging utility
-const log = {
-  info: (message: string, data?: any) => {
-    const timestamp = new Date().toISOString()
-    console.log(`[FRONTEND-MAIN] ${timestamp} | INFO | ${message}`, data || '')
-  },
-  error: (message: string, error?: any) => {
-    const timestamp = new Date().toISOString()
-    console.error(`[FRONTEND-MAIN] ${timestamp} | ERROR | ${message}`, error || '')
-  }
-}
+const log = logger
 
 type ViewMode = 'home' | 'property' | 'analytics' | 'document' | 'insights' | 'chat'
 
@@ -70,7 +61,7 @@ export default function Home() {
     if (!finalQuery.trim()) return
     // Allow force to bypass isProcessing check (for quick actions)
     if (!force && isProcessing) {
-      console.log('Search blocked: operation already in progress')
+      logger.warn('Search blocked: operation already in progress')
       return
     }
 
@@ -124,7 +115,7 @@ export default function Home() {
       setResponseData(data)
       setQuery('')
     } catch (error) {
-      console.error('Error:', error)
+      logger.error('Error:', error)
       addMessage('assistant', 'I apologize, but I encountered an error processing your request. Please try again.')
     } finally {
       setIsProcessing(false)
@@ -183,7 +174,7 @@ export default function Home() {
       addMessage('assistant', result)
       
     } catch (error) {
-      console.error('CrewAI Error:', error)
+      logger.error('CrewAI Error:', error)
       const errorMsg = `Error: ${error instanceof Error ? error.message : 'Something went wrong'}`
       setCrewaiResponse(errorMsg)
       addMessage('assistant', errorMsg)
@@ -250,7 +241,7 @@ export default function Home() {
         aiSummary: responseData.aiSummary,
       })
     } catch (error) {
-      console.error('Error processing document:', error)
+      logger.error('Error processing document:', error)
       const errorMessage = error instanceof Error 
         ? error.message 
         : 'Failed to process document. Please try again.'
@@ -424,7 +415,7 @@ function HomeView({
   const handleInputSubmit = async (message: string, files?: any[]) => {
     if (message.trim() || (files && files.length > 0)) {
       // Send typed input to agents pipeline and show loading
-      log.info('Home input submitted - routing to agents', {
+      logger.info('Home input submitted - routing to agents', {
         messageLength: message.length,
         hasFiles: !!(files && files.length > 0),
         fileCount: files?.length || 0

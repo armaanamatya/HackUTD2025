@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { logger } from '../services/logger'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Upload, Bot, User, X } from 'lucide-react'
 import MessageBubble from './MessageBubble'
@@ -68,7 +69,7 @@ export default function AgentChat() {
 
       setMessages((prev) => [...prev, assistantMessage])
     } catch (error) {
-      console.error('Error:', error)
+      logger.error('Error:', error)
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',

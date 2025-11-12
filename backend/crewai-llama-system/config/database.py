@@ -6,6 +6,11 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 from typing import Optional
 import logging
+from dotenv import load_dotenv
+try:
+    import certifi
+except Exception:
+    certifi = None
 
 logger = logging.getLogger(__name__)
 
@@ -13,14 +18,25 @@ class Database:
     client: Optional[AsyncIOMotorClient] = None
     database = None
 
-# MongoDB connection string
-MONGODB_URL = "mongodb+srv://armaanamatya2014_db_user:4czlTmpWmiMKeGEL@cluster0.rxrhayj.mongodb.net/?appName=Cluster0"
-DATABASE_NAME = "hackutd_real_estate"
+# Load environment variables
+load_dotenv()
+
+# MongoDB connection string and database name from environment
+MONGODB_URL = os.getenv("DATABASE_URL")
+DATABASE_NAME = os.getenv("DATABASE_NAME", "hackutd_real_estate")
 
 async def connect_to_mongo():
     """Create database connection"""
     try:
-        Database.client = AsyncIOMotorClient(MONGODB_URL)
+        if not MONGODB_URL:
+            raise RuntimeError("DATABASE_URL is not set. Configure it in your environment or .env file.")
+        tls_ca_file = os.getenv("TLS_CA_FILE") or (certifi.where() if certifi else None)
+        Database.client = AsyncIOMotorClient(
+            MONGODB_URL,
+            tls=True,
+            tlsAllowInvalidCertificates=False,
+            tlsCAFile=tls_ca_file,
+        )
         Database.database = Database.client[DATABASE_NAME]
         
         # Test connection

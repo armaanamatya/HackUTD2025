@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { logger } from '../services/logger'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Upload, X, FileText } from 'lucide-react'
 
@@ -31,8 +32,7 @@ export default function DocumentUpload({ onClose }: DocumentUploadProps) {
   }
 
   const handleUpload = async () => {
-    // TODO: Implement actual upload logic
-    console.log('Uploading files:', files)
+    logger.info('Uploading files', { count: files.length, names: files.map(f => f.name) })
     onClose()
   }
 

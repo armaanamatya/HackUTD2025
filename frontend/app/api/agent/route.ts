@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { logger } from '../../services/logger'
 
 export type IntentType = 'property_discovery' | 'predictive_analytics' | 'chat' | 'document_intelligence' | 'insight_summarizer'
 
@@ -126,7 +127,7 @@ export async function POST(request: NextRequest) {
         
         // Debug: Log first listing to see actual data structure
         if (listings.length > 0) {
-          console.log('Sample listing from MongoDB:', JSON.stringify(listings[0], null, 2))
+          logger.info('Sample listing from MongoDB', { sample: listings[0] })
         }
         
         // Transform MongoDB listings to frontend Property format
@@ -210,7 +211,7 @@ export async function POST(request: NextRequest) {
           },
         }
       } catch (error) {
-        console.error('Error fetching listings from backend:', error)
+        logger.error('Error fetching listings from backend:', error)
         // Fallback to empty results or show error message
         response.title = 'Property Discovery'
         response.content = 'Unable to fetch properties from database. Please check if the backend server is running.'
@@ -429,7 +430,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response)
   } catch (error) {
-    console.error('Agent API error:', error)
+    logger.error('Agent API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

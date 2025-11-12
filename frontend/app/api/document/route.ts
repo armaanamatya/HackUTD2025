@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logger } from "../../services/logger";
 
 // Types
 interface PDFParseResult {
@@ -26,7 +27,7 @@ async function loadPdfParse() {
     const mod = await import("pdf-parse");
     return mod.default || mod;
   } catch (err) {
-    console.error("Failed to import pdf-parse:", err);
+    logger.error("Failed to import pdf-parse:", err);
     throw new Error("Failed to import pdf-parse library");
   }
 }
@@ -40,7 +41,7 @@ async function extractTextFromPDF(buffer: Buffer): Promise<PDFParseResult> {
       throw new Error("Invalid pdf-parse import — expected a function.");
     }
 
-    console.log("Parsing PDF buffer, size:", buffer.length, "bytes");
+    logger.info("Parsing PDF buffer", { size: buffer.length });
 
     const data = await pdfParse(buffer);
     if (!data) throw new Error("No data returned from pdf-parse.");
@@ -48,10 +49,10 @@ async function extractTextFromPDF(buffer: Buffer): Promise<PDFParseResult> {
     const text = data.text || "";
     const numPages = data.numpages || 0;
 
-    console.log("✅ PDF parsed successfully:", { numPages, textLength: text.length });
+    logger.info("PDF parsed successfully", { numPages, textLength: text.length });
     return { text, numPages };
   } catch (err: any) {
-    console.error("❌ Error parsing PDF:", err);
+    logger.error("Error parsing PDF:", err);
     throw new Error(`Failed to extract text from PDF: ${err.message || "Unknown error"}`);
   }
 }
@@ -220,7 +221,7 @@ async function generateAISummary(
     const data = await response.json();
     return data.choices[0]?.message?.content || generateRuleBasedSummary(fileName, metrics);
   } catch (error) {
-    console.error("Error generating AI summary:", error);
+    logger.error("Error generating AI summary:", error);
     // Fallback to rule-based summary
     return generateRuleBasedSummary(fileName, metrics);
   }
@@ -258,7 +259,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`📄 Received file: ${fileName} (${fileType})`);
+    logger.info("Received file", { fileName, fileType });
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -285,7 +286,7 @@ export async function POST(request: NextRequest) {
       ...result,
     });
   } catch (err: any) {
-    console.error("❌ Document processing error:", err);
+    logger.error("Document processing error:", err);
     return NextResponse.json(
       { error: err?.message || "Failed to process PDF" },
       { status: 500 }
