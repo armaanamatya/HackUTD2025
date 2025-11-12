@@ -33,3 +33,5 @@ beanie
 # Data processing
 pandas
 certifi
+beautifulsoup4
+lxml
