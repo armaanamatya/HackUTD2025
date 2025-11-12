@@ -10,7 +10,8 @@ from config.models import MarketListing
 router = APIRouter()
 
 @router.get("/listings")
-async def get_market_listings(city: Optional[str] = None, state: Optional[str] = None, min_price: Optional[float] = None, max_price: Optional[float] = None, property_type: Optional[str] = None, status: Optional[str] = None, limit: int = 100, skip: int = 0):
+async def get_market_listings(city: Optional[str] = None, state: Optional[str] = None, min_price: Optional[float] = None, max_price: Optional[float] = None, property_type: Optional[str] = None, status: Optional[str] = None, limit: int = 100, skip: int = 0) -> Dict[str, Any]:
+    """List market listings with optional filters and pagination."""
     try:
         if get_database() is None:
             raise HTTPException(status_code=503, detail="Database not connected")
@@ -41,7 +42,8 @@ async def get_market_listings(city: Optional[str] = None, state: Optional[str] =
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/listings/search")
-async def search_listings(request: ListingSearchRequest):
+async def search_listings(request: ListingSearchRequest) -> Dict[str, Any]:
+    """Search listings by query and optional structured filters."""
     try:
         if get_database() is None:
             raise HTTPException(status_code=503, detail="Database not connected")
@@ -65,7 +67,8 @@ async def search_listings(request: ListingSearchRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/listings/stats")
-async def get_listing_stats():
+async def get_listing_stats() -> Dict[str, Any]:
+    """Return aggregate statistics across listings."""
     try:
         if get_database() is None:
             raise HTTPException(status_code=503, detail="Database not connected")
