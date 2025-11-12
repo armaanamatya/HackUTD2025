@@ -11,7 +11,7 @@ from app.schemas import (
     RespondWithFilesRequest,
     JobResponse,
 )
-from app.services.jobs import (
+from app.jobs.jobs import (
     job_store,
     run_research_job,
     run_project_planning_job,

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from app.routes.config import router as config_router
+from app.routers.config import router as config_router
 
 def test_config_routes():
     app = FastAPI()

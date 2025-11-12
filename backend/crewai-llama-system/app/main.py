@@ -5,9 +5,9 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 
-from app.routes.config import router as config_router
-from app.routes.jobs import router as jobs_router
-from app.routes.listings import router as listings_router
+from app.routers.config import router as config_router
+from app.routers.jobs import router as jobs_router
+from app.routers.listings import router as listings_router
 from config import llm_config
 from config.database import connect_to_mongo, close_mongo_connection
 

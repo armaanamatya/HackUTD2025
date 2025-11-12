@@ -35,6 +35,8 @@ async def get_market_listings(city: Optional[str] = None, state: Optional[str] =
         total_count = await MarketListing.find(filters).count()
         listings_dicts = [clean_nan_values(listing.dict()) for listing in listings]
         return {"listings": listings_dicts, "total_count": total_count, "returned_count": len(listings), "skip": skip, "limit": limit}
+    except HTTPException as e:
+        raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -57,6 +59,8 @@ async def search_listings(request: ListingSearchRequest):
         listings = await cursor.to_list()
         listings_dicts = [clean_nan_values(listing.dict()) for listing in listings]
         return {"query": request.query, "results": listings_dicts, "count": len(listings)}
+    except HTTPException as e:
+        raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -73,5 +77,7 @@ async def get_listing_stats():
         city_stats_cleaned = clean_nan_values(city_stats)
         type_stats_cleaned = clean_nan_values(type_stats)
         return {"total_listings": total_listings, "top_cities": city_stats_cleaned, "property_types": type_stats_cleaned, "last_updated": datetime.utcnow().isoformat()}
+    except HTTPException as e:
+        raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
